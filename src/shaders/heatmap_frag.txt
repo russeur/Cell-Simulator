@@ -1,0 +1,19 @@
+#version 330 core
+
+
+flat in float frag_heat;
+
+out vec4 screenColor;
+
+
+
+void main(){
+	
+	
+	screenColor = vec4(frag_heat, 0.0f, 0.0f, 1.0f);
+	
+}
+
+
+
+

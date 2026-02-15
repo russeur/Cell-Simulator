@@ -1,0 +1,21 @@
+#version 330 core
+
+
+in vec2 frag_pos;
+in vec3 frag_color;
+
+out vec4 screenColor;
+
+
+
+void main(){
+	vec2 centered_frag_pos = frag_pos-.5;
+	float d = sqrt((centered_frag_pos.x*centered_frag_pos.x) + (centered_frag_pos.y*centered_frag_pos.y));
+	
+	screenColor = vec4(frag_color.xyz, 1.0f-smoothstep(.48f, .5f, d));
+	
+}
+
+
+
+
