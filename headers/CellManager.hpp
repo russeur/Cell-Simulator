@@ -1,41 +1,32 @@
 #pragma once
 
-
+#include "Cell_Render.hpp"
 #include "Environment.hpp"
+#include "AdhesionConnection.hpp"
 #include <vector>
 #include <memory>
 #include <utility>
 
 
-class Cell;
-class Cell_Render;
 
 
 
-class CellGroup{
-	
-	Position2D pos;
-	float angle;
-	
-	Position2D vel;
-	float angular_vel;
-	
-	float mass;
-	
-	float rotational_inertia;
-	
-	std::vector<Cell*> cells;
-	
-	
-	
-}
+
 
 
 class CellRenderManager{
 	public:
 	Environment* env;
+	Render_Rect_Manager<CellVert>* render_rect_man;
+	Window* window;
+	
+	
 	std::vector<std::unique_ptr<Cell>> cell_list; // list of (cell_ptr, list of collisions)
 	std::vector<std::vector<Cell*>> collision_list;
+	
+	std::vector<std::weak_ptr<AdhesionConnection>> adhesion_connections;
+	
+	
 	
 	bool is_colliding(Cell*, Cell*);
 	bool fix_collision(Cell* cell_a, Cell* cell_b);
@@ -43,8 +34,10 @@ class CellRenderManager{
 	
 	public:
 	
-	void add_cell(std::unique_ptr<Cell_Render>); // Cell Manager will now take care and own this pointer/cell from now on
+	//void add_cell(std::unique_ptr<Cell_Render>); // Cell Manager will now take care and own this pointer/cell from now on
+	void add_cell(Position2D, MoleculeConcentrations);
 	void delete_cell(Cell*);
+	
 	
 	std::vector<Cell*> find_touching_cells(Cell*);
 	//find light, so that eye cells can work.
@@ -53,7 +46,7 @@ class CellRenderManager{
 	void simulation_step();
 	void render_step();
 	
-	CellRenderManager(Environment*);
+	CellRenderManager(Environment*, Render_Rect_Manager<CellVert>*, Window*);
 	
 };
 

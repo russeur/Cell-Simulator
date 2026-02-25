@@ -1,53 +1,73 @@
 #include "CellManager.hpp"
-#include "Cell_Render.hpp"
+#include "AdhesionConnection.hpp"
 
 
 bool CellRenderManager::fix_collision(Cell* cell_a, Cell* cell_b){
 	
+	
 	Position2D dist_vector = cell_a->pos - cell_b->pos;
 	float dist = sqrt((dist_vector.x*dist_vector.x) + (dist_vector.y*dist_vector.y));
+	if (dist == 0) return false;
 	float overlap = cell_a->size + cell_b->size - dist;
 	if (overlap <= 0) return false;
 	
 	//we know they are colliding now!!
 	
-	//TODO fix the collision now that you know they collided
+	
 	
 	if (cell_a->vel == Position2D{0.0, 0.0} && cell_b->vel == Position2D{0.0, 0.0}){
 		
-		Position2D sin_cos = {dist_vector.x/dist, dist_vector.y/dist}; // now I have a normal vector a
 		
+		Position2D sin_cos = {dist_vector.x/dist, dist_vector.y/dist}; // now I have a normal vector a
+		//cell_a->pos -= Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
+		//cell_b->pos += Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
 		cell_a->pos += Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
 		cell_b->pos -= Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
 		
 		
 		
-	}else if (cell_a->is_stuck_to_cell(cell_b)){
+	}else if (false && cell_a->is_stuck_to_cell(cell_b)){
 		
 		Position2D sin_cos = {dist_vector.x/dist, dist_vector.y/dist}; // now I have a normal vector a
 		
-		cell_a->pos += Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
-		cell_b->pos -= Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
+		cell_a->pos += Position2D{sin_cos.x*overlap*.5f *.8f, sin_cos.y*overlap*.5f *.8f};
+		cell_b->pos -= Position2D{sin_cos.x*overlap*.5f *.8f, sin_cos.y*overlap*.5f *.8f};
 		
 		
-		/*
-		Position2D sum_vel = cell_a->vel + cell_b->vel;
 		
-		cell_a->vel = sum_vel * Position2D{.5f, .5f};
-		cell_b->vel = sum_vel  * Position2D{.5f, .5f};
-		*/
 		
 		
 	}else if (true){
+		
 		Position2D sin_cos = {dist_vector.x/dist, dist_vector.y/dist}; // now I have a normal vector a
 		
-		cell_a->pos += Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
-		cell_b->pos -= Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
+		cell_a->pos += Position2D{sin_cos.x*overlap*.5f *.1f, sin_cos.y*overlap*.5f *.1f};
+		cell_b->pos -= Position2D{sin_cos.x*overlap*.5f *.1f, sin_cos.y*overlap*.5f *.1f};
+		//Position2D sum_vel = cell_a->vel + cell_b->vel;
 		
-		Position2D sum_vel = cell_a->vel + cell_b->vel;
+		Position2D vel_dif = cell_a->vel - cell_b->vel;
 		
-		cell_a->vel = sum_vel * Position2D{.5f, .5f};
-		cell_b->vel = sum_vel  * Position2D{.5f, .5f};
+		float velAlongNormal = vel_dif.x*sin_cos.x + vel_dif.y*sin_cos.y;
+		
+		//if (velAlongNormal > 0){
+		//	std::cout<<"bad col\n";
+		//	return true;
+		//}
+		
+		float restitution = .2f;  // 1.0 = perfect bounce, 0 = no bounce
+
+		float j = -(1 + restitution) * velAlongNormal;
+		j /= (1 / cell_a->mass + 1 / cell_b->mass); // cell_a->szie = mass
+		
+		
+		cell_a->add_force(sin_cos * Position2D{j, j});
+		cell_b->add_force(sin_cos * Position2D{-j, -j});
+		
+		
+		
+		
+		//cell_a->vel = sum_vel * Position2D{.5f, .5f};
+		//cell_b->vel = sum_vel  * Position2D{.5f, .5f};
 		
 	}else{
 		Position2D sin_cos = {dist_vector.x/dist, dist_vector.y/dist}; // now I have a normal vector a
@@ -69,6 +89,7 @@ bool CellRenderManager::fix_collision(Cell* cell_a, Cell* cell_b){
 		
 		
 	}
+	
 	
 	return true;
 }
@@ -103,9 +124,9 @@ bool CellRenderManager::fix_wall_collisions(Cell* cell_ptr){
 	
 }
 
-void CellRenderManager::add_cell(std::unique_ptr<Cell_Render> cell_ptr){
+void CellRenderManager::add_cell(Position2D pos, MoleculeConcentrations conc){
 	
-	cell_list.push_back(static_cast<std::unique_ptr<Cell>>(std::move(cell_ptr)));
+	cell_list.push_back(std::make_unique<Cell_Render>(env, this, pos, conc, render_rect_man, window));
 	
 	collision_list.push_back(std::vector<Cell*>());
 	
@@ -122,6 +143,9 @@ void CellRenderManager::delete_cell(Cell* cell_ptr){
 	
 	
 }
+
+
+
 
 std::vector<Cell*> CellRenderManager::find_touching_cells(Cell* client_cell){
 	for (int i = 0; i < static_cast<int>(cell_list.size()); i++){
@@ -141,20 +165,38 @@ void CellRenderManager::simulation_step(){
 		cell_list[i]->simulation_step();
 		
 		bool x = fix_wall_collisions(cell_list[i].get());
-		if (x)std::cout<<"hit wall\n";
+		
 		collision_list[i].clear();
 		
+	}
+	
+	for (int i = 0; i < static_cast<int>(adhesion_connections.size()); i++){
+		if (auto current_conn = adhesion_connections[i].lock()){
+			current_conn->simulation_step();
+		}else{
+			adhesion_connections.erase(adhesion_connections.begin() + i);
+		}
 	}
 	
 	
 	for (int i = 0; i<static_cast<int>(cell_list.size()); i++){
 		for (int j = i+1; j < static_cast<int>(cell_list.size()); j++){
 			
-			if (fix_collision(cell_list[i].get(), cell_list[j].get())){
+			if (fix_collision(cell_list[i].get(), cell_list[j].get()) && (!cell_list[i]->is_stuck_to_cell(cell_list[j].get()))){
+				
 				// add collision to the memory of collisions this frame
 				collision_list[i].push_back(cell_list[j].get());
 				collision_list[j].push_back(cell_list[i].get());
+				
+				std::shared_ptr<AdhesionConnection> new_conn(new AdhesionConnection(cell_list[i].get(), cell_list[j].get()));
+				
+				cell_list[i]->force_add_adhesion_connection(new_conn); // give ownership to the two cells
+				cell_list[j]->force_add_adhesion_connection(new_conn);
+				
+				adhesion_connections.push_back(new_conn);
+				
 				std::cout<<"add collision\n";
+				
 				
 			}
 			
@@ -174,7 +216,9 @@ void CellRenderManager::render_step(){
 	
 }
 
-CellRenderManager::CellRenderManager(Environment* env){
-	std::cout<<"hi\n";
+CellRenderManager::CellRenderManager(Environment* env, Render_Rect_Manager<CellVert>* render_rect_man, Window* window){
+	
 	this->env = env;
+	this->render_rect_man = render_rect_man;
+	this->window = window;
 }

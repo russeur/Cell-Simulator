@@ -1,24 +1,106 @@
 #include "Cell.hpp"
+#include "CellManager.hpp"
+#include "AdhesionConnection.hpp"
+
+
+void Cell::run_plant_type(){
+	
+	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += .1;
+	
+	env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, .05);
+	
+}
+
+void Cell::split(){
+	std::cout<<"split!\n";
+	inside_concentrations[0] /=2.0;
+	inside_concentrations[1] /=2.0;
+	inside_concentrations[2] /=2.0;
+	inside_concentrations[3] /=2.0;
+	inside_concentrations[4] /=2.0;
+	
+	mass = inside_concentrations[0];
+	size = sqrt(mass/M_PI) * 10;
+	
+	pos.x += size;
+	
+	
+	
+	
+	cell_manager->add_cell(pos + Position2D{-2*size, 0}, inside_concentrations);
+	
+	
+}
+
+bool Cell::try_to_split(){
+	std::cout<<"food: "<<inside_concentrations[static_cast<int>(MoleculeType::FOOD)]<<"\n";
+	if (inside_concentrations[static_cast<int>(MoleculeType::FOOD)] > 200.0){
+		
+		split();
+		return true;
+	}
+	return false;
+}
+
+void Cell::run_cell_type(){
+	
+	switch (cell_type){
+		case CellType::NONE:
+			break;
+		case CellType::EATER:
+			break;
+		case CellType::PLANT:
+			run_plant_type();
+			break;
+		
+	}
+	
+}
+
+void Cell::add_force(Position2D force){
+	
+	vel += Position2D{force.x / mass, force.y/mass};
+	
+}
+void Cell::add_torque(float torque){
+	angle_vel += torque / (.5 * mass * size*size);
+}
 
 
 void Cell::simulation_step(){
 	
-	size = inside_concentrations[0];
+	try_to_split();
 	
-	angle_velocity = .01;
-	angle_rads += angle_velocity;
-	
-	
-	if (std::abs(vel.x) > 3 || std::abs(vel.y) > 3){
+	run_cell_type();
+	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 		
-		vel = Position2D{0, 0};
+		stuck_cells[i]->apply_force_to_cell(this);
 		
-	} 
+	}
+	
 	pos += vel;
-	vel = Position2D{vel.x*.99, vel.y*.99};
+	
+	angle_rads += angle_vel;
+	
 	env->add_molecule_to_pos(pos, MoleculeType::FOOD, .05);
 	
+	mass = inside_concentrations[0];
+	size = sqrt(mass/M_PI) * 10;
 	
+	
+	
+	//cell_group->add_force(pos+Position2D{size, 0}, Position2D{-.005, .001});
+	
+	//angle_velocity = .01;
+	//angle_rads += angle_velocity;
+	
+	
+	
+	//pos += vel;
+	//vel = Position2D{vel.x*.99, vel.y*.99};
+	
+	
+	/*
 	//get touching cells in order for adhesion, doesn't need to be fast because you will really ever be touchign like 4 cells max
 	std::vector<Cell*> touching_cells = cell_manager->find_touching_cells(this);
 	if (stuck_cells.size() < 3){
@@ -36,7 +118,7 @@ void Cell::simulation_step(){
 				
 			}
 			if (!already_stuck){
-				
+				/*
 				Position2D vector_dif = pos - touching_cells[i]->pos;
 				
 				
@@ -53,35 +135,9 @@ void Cell::simulation_step(){
 			
 		}
 	}
+	*/
 	
-	for (int i = 0; i<stuck_cells.size(); i++){
-		
-		Position2D host_port_pos = {size*std::cos(angle_rads + stuck_cells[i].host_angle_rads), -size*std::sin(angle_rads + stuck_cells[i].host_angle_rads)};
-		host_port_pos += pos;
-		
-		Position2D client_port_pos = {stuck_cells[i].cell->size*std::cos(stuck_cells[i].cell->angle_rads + stuck_cells[i].client_angle_rads),  -stuck_cells[i].cell->size*std::sin(stuck_cells[i].cell->angle_rads +stuck_cells[i].client_angle_rads)};
-		client_port_pos += stuck_cells[i].cell->pos;
-		
-		Position2D vector_dif = host_port_pos-client_port_pos;
-		float dif = sqrt((vector_dif.x*vector_dif.x) + (vector_dif.y*vector_dif.y));
-		if (dif < .001) return;
-		const float space = 10.0;
-		//if (dif < space) continue;
-		
-		//std::cout<<"d: "<<vector_dif.x<<", "<<vector_dif.y<<"\n";
-		const float connection_strength = .05;
-		
-		//dif  = std::min(dif, space*1.1f);
-		
-		float force = -connection_strength;
-		//if (dif<space) force *= (dif/space);
-		
-		//std::cout<<"f: "<<force<<" \n";
-		
-		
-		
-		
-		vel += Position2D{force * (vector_dif.x/dif), force * (vector_dif.y/dif)} - Position2D{};
+	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 		
 		
 		
@@ -94,19 +150,29 @@ bool Cell::is_stuck_to_cell(Cell* client_cell){
 	
 	for (int i = 0;i < stuck_cells.size(); i++){
 		
-		if (stuck_cells[i].cell == client_cell) return true;
+		if (stuck_cells[i]->c1 == client_cell || stuck_cells[i]->c2 == client_cell) return true;
 		
 	}
 	return false;
 }
 
+void Cell::force_add_adhesion_connection(std::shared_ptr<AdhesionConnection> new_conn){
+	
+	stuck_cells.push_back(std::move(new_conn));
+	
+}
+
 	
 Cell::Cell(Environment* env, CellRenderManager*){
+	
+	cell_type = CellType::PLANT;
 	
 	this->env = env;
 	
 }
 Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc){
+	std::cout<<"new cell\n";
+	cell_type = CellType::PLANT;
 	
 	this->env = env;
 	this->cell_manager = cell_man;
@@ -114,7 +180,8 @@ Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, Molecu
 	this->inside_concentrations = conc;
 	
 	
-	size = conc[0];
+	mass = inside_concentrations[0];
+	size = sqrt(mass/M_PI)*10;
 	
 	
 }

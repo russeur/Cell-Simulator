@@ -24,6 +24,7 @@ src/Environment.cpp
 src/Cell.cpp
 src/Cell_Render.cpp
 src/CellManager.cpp
+src/AdhesionConnection.cpp
 )
 
 target_include_directories(main PRIVATE dependencies headers)

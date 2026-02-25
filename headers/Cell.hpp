@@ -3,53 +3,76 @@
 
 #include "Molecules.hpp"
 #include "Environment.hpp"
-#include "CellManager.hpp"
+
+#include <memory>
 #include <cmath>
 
-enum CellType{
-	EATER
-	
-};
-class Cell;
-
-struct AdhesionConnection{
-	Cell* cell;
-	double host_angle_rads = 2;
-	double client_angle_rads = 2;
-	
-};
 
 class CellRenderManager;
+class AdhesionConnection;
+
+
+enum CellType{
+	NONE,
+	EATER,
+	PLANT
+	
+};
+
+
+
+
+
 
 
 
 
 class Cell{
 	
+	void run_plant_type();
+	void split();
+	
+	protected:
+	
+	bool try_to_split();
+	void run_cell_type();
+	
+	
 	public:
 	
 	Environment* env;
 	CellRenderManager* cell_manager;
-	CellType cell_type; // chosen from starting_genes
-	float size; // based solely on food inside of cell
-	Position2D pos; // based on center of cell/circle
-	Position2D vel = {0.0, 0.0}; 
+	CellType cell_type = CellType::NONE; // chosen from starting_genes
+	float size = 0; // based solely on food inside of cell
+	float mass = 0; // mass and volume in this case are equivelent
 	
-
+	Position2D pos = Position2D{0, 0}; // based on center of cell/circle
+	double angle_rads = 0; // in radians
 	
-	double angle_rads = 0;
-	double angle_velocity = 0;
+	Position2D vel = Position2D{0.0, 0.0};
+	double angle_vel = 0; // in rans
 	
-	std::vector<AdhesionConnection> stuck_cells; // list of all cells stuck to this one
+	
+	
+	
+	
+	
+	
+	
+	
+	std::vector<std::shared_ptr<AdhesionConnection>> stuck_cells; // list of all cells stuck to this one
 	
 	
 	MoleculeConcentrations inside_concentrations;
 	
 	//TODO: starting and running genes
 	
+	void add_force(Position2D force);
+	void add_torque(float torque);
 	
 	void simulation_step();
 	bool is_stuck_to_cell(Cell*);
+	void force_add_adhesion_connection(std::shared_ptr<AdhesionConnection>);
 	
 	Cell(Environment*, CellRenderManager*);
 	Cell(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations);

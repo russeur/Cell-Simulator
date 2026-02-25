@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "Cell_Render.hpp"
+#include "CellManager.hpp"
 
 
 struct heat_map_vert{
@@ -31,26 +31,7 @@ int main() {
 	
 	
 	
-	std::unordered_map<int*, int> map;
 	
-	std::unique_ptr<int> my_int = std::make_unique<int>(0);
-	std::cout<<"set value of unique_ptr to: "<<*my_int<<"\n";
-	std::cout<<"allocated memory\n";
-	
-	*my_int = 5;
-	std::cout<<"set value of unique_ptr to: "<<*my_int<<"\n";
-	
-	
-	
-	
-	
-	
-	map.emplace(my_int.get(), *my_int);
-	
-	
-	int* func_arg = my_int.get();
-	
-	std::cout<<"my map output: "<<map[func_arg]<<"\n";
 	
 	
 	
@@ -93,21 +74,21 @@ int main() {
 	
 	Render_Rect_Manager<CellVert> cell_rect_manager("../src/shaders/cell_vert.txt", "../src/shaders/cell_frag.txt");
 	
-	CellRenderManager cell_manager(&env);
+	CellRenderManager cell_manager(&env, &cell_rect_manager, window);
 	
 	//initial cells
-	cell_manager.add_cell(std::unique_ptr<Cell_Render>(new Cell_Render(&env, &cell_manager, Position2D{100.0f, 100.0f}, MoleculeConcentrations{50.0, 0.0, 0.0, 0.0}, &cell_rect_manager, window)));
-	cell_manager.add_cell(std::unique_ptr<Cell_Render>(new Cell_Render(&env, &cell_manager, Position2D{270.0f, 300.0f}, MoleculeConcentrations{30.0, 0.0, 0.0, 0.0}, &cell_rect_manager, window)));
-	cell_manager.add_cell(std::unique_ptr<Cell_Render>(new Cell_Render(&env, &cell_manager, Position2D{100.0f, 350.0f}, MoleculeConcentrations{20.0, 0.0, 0.0, 0.0}, &cell_rect_manager, window)));
-	cell_manager.add_cell(std::unique_ptr<Cell_Render>(new Cell_Render(&env, &cell_manager, Position2D{450.0f, 350.0f}, MoleculeConcentrations{10.0, 0.0, 0.0, 0.0}, &cell_rect_manager, window)));
+	cell_manager.add_cell(Position2D{200.0f, 200.0f}, MoleculeConcentrations{50.0, 0.0, 0.0, 0.0});
+	cell_manager.add_cell(Position2D{300.0f, 300.0f}, MoleculeConcentrations{30.0, 0.0, 0.0, 0.0});
+	cell_manager.add_cell(Position2D{100.0f, 350.0f}, MoleculeConcentrations{20.0, 0.0, 0.0, 0.0});
+	cell_manager.add_cell(Position2D{450.0f, 350.0f}, MoleculeConcentrations{10.0, 0.0, 0.0, 0.0});
 	
 	
 	
 	
-	cell_manager.cell_list[0]->vel = Position2D{1.0, 1};
-	cell_manager.cell_list[1]->vel = Position2D{-0.0, -1};
-	cell_manager.cell_list[2]->vel = Position2D{1.0, -1};
-	cell_manager.cell_list[3]->vel = Position2D{1.0, 1};
+	cell_manager.cell_list[0]->add_force(Position2D{10.0, 10.0});
+	//cell_manager.cell_list[1]->vel = Position2D{-0.0, -1};
+	//cell_manager.cell_list[2]->vel = Position2D{1.0, -1};
+	//cell_manager.cell_list[3]->vel = Position2D{1.0, 1};
 	
 	
 	
@@ -130,6 +111,9 @@ int main() {
 		
 		
 		run_simulation(window, &env, &rect_manager, &cell_rect_manager, &cell_manager);
+		
+		//cell_manager.cell_list[0]->cell_group->add_force(cell_manager.cell_list[0]->pos, Position2D{.01, .01});
+		//cell_manager.cell_list[1]->cell_group->add_force(cell_manager.cell_list[1]->pos, Position2D{-.01, -.01});
 		
 		render_simulation();
 		
@@ -174,7 +158,7 @@ void run_simulation(Window* window, Environment* env, Render_Rect_Manager<heat_m
 	
 	if (window->get_mouse_button_state(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
 		if (!left_pressed){
-			cell_manager->add_cell(std::unique_ptr<Cell_Render>(new Cell_Render(env, cell_manager, Position2D{window->cursor_x, window->cursor_y}, MoleculeConcentrations{10.0, 0.0, 0.0, 0.0}, cell_rect_manager, window)));
+			cell_manager->add_cell(Position2D{window->cursor_x, window->cursor_y}, MoleculeConcentrations{10.0, 0.0, 0.0, 0.0});
 		}
 		//env->add_molecule_to_pos(Position2D{window->cursor_x, window->cursor_y}, static_cast<MoleculeType>(mtype), .1);
 		env->add_molecules_to_pos(Position2D{window->cursor_x, window->cursor_y}, MoleculeConcentrations{-.2, .2, .2, 1.0});
