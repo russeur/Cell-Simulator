@@ -19,6 +19,15 @@ void Cell::split(){
 	inside_concentrations[3] /=2.0;
 	inside_concentrations[4] /=2.0;
 	
+	
+	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
+		
+		stuck_cells[i]->disconnect_connection();
+		notify_remove_connection(0);
+	}
+	stuck_cells.clear();
+	
+	
 	mass = inside_concentrations[0];
 	size = sqrt(mass/M_PI) * 10;
 	
@@ -33,8 +42,8 @@ void Cell::split(){
 }
 
 bool Cell::try_to_split(){
-	std::cout<<"food: "<<inside_concentrations[static_cast<int>(MoleculeType::FOOD)]<<"\n";
-	if (inside_concentrations[static_cast<int>(MoleculeType::FOOD)] > 200.0){
+	//std::cout<<"food: "<<inside_concentrations[static_cast<int>(MoleculeType::FOOD)]<<"\n";
+	if (inside_concentrations[static_cast<int>(MoleculeType::FOOD)] > 70.0){
 		
 		split();
 		return true;
@@ -73,8 +82,14 @@ void Cell::simulation_step(){
 	
 	run_cell_type();
 	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
-		
-		stuck_cells[i]->apply_force_to_cell(this);
+		if (!stuck_cells[i]->get_is_disconnected()){
+			
+			stuck_cells[i]->apply_force_to_cell(this);
+		}else{
+			
+			stuck_cells.erase(stuck_cells.begin() + i);
+			notify_remove_connection(i);
+		}
 		
 	}
 	
@@ -100,48 +115,28 @@ void Cell::simulation_step(){
 	//vel = Position2D{vel.x*.99, vel.y*.99};
 	
 	
-	/*
+	
 	//get touching cells in order for adhesion, doesn't need to be fast because you will really ever be touchign like 4 cells max
 	std::vector<Cell*> touching_cells = cell_manager->find_touching_cells(this);
-	if (stuck_cells.size() < 3){
-		for (int i = 0; i < static_cast<int>(touching_cells.size()); i++){
-			if (touching_cells[i]->stuck_cells.size() >= 3) continue; 
-			bool already_stuck = false;
-			for (int s = 0; s < static_cast<int>(stuck_cells.size()); s++){
+	
+	for (int i = 0; i < static_cast<int>(touching_cells.size()); i++){
+		
+		if (!is_stuck_to_cell(touching_cells[i]) && willing_for_connection() && touching_cells[i]->willing_for_connection()){ // if both me and the other are ready for connection, then do it
+			
+			std::shared_ptr<AdhesionConnection> new_conn(new AdhesionConnection(this, touching_cells[i]));
 				
-				if (touching_cells[i] == stuck_cells[s].cell){
-					
-					already_stuck = true; 
-					continue;
-				}
-				
-				
-			}
-			if (!already_stuck){
-				/*
-				Position2D vector_dif = pos - touching_cells[i]->pos;
-				
-				
-				float port_angle = std::atan(-vector_dif.y/vector_dif.x);
-				
-				if (vector_dif.x >= 0) stuck_cells.push_back(AdhesionConnection{touching_cells[i], M_PI+port_angle - angle_rads, port_angle - touching_cells[i]->angle_rads});
-				else stuck_cells.push_back(AdhesionConnection{touching_cells[i], port_angle - angle_rads, M_PI+port_angle - touching_cells[i]->angle_rads});
-				
-				
-				
-				
-				
-			}
+			this->force_add_adhesion_connection(new_conn); // give ownership to the two cells
+			touching_cells[i]->force_add_adhesion_connection(new_conn);
+			
+			cell_manager->add_adhesion_connection(new_conn);
 			
 		}
+		
 	}
-	*/
 	
-	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
-		
-		
-		
-	}
+	
+	
+	
 	
 	
 }
@@ -159,9 +154,17 @@ bool Cell::is_stuck_to_cell(Cell* client_cell){
 void Cell::force_add_adhesion_connection(std::shared_ptr<AdhesionConnection> new_conn){
 	
 	stuck_cells.push_back(std::move(new_conn));
-	
+	notify_add_connection();
 }
 
+bool Cell::willing_for_connection(){
+	
+	if (stuck_cells.size() < 3){
+		return true;
+	}
+	else return false;
+	
+}
 	
 Cell::Cell(Environment* env, CellRenderManager*){
 	
@@ -171,7 +174,7 @@ Cell::Cell(Environment* env, CellRenderManager*){
 	
 }
 Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc){
-	std::cout<<"new cell\n";
+	
 	cell_type = CellType::PLANT;
 	
 	this->env = env;

@@ -32,10 +32,16 @@ class Cell{
 	void run_plant_type();
 	void split();
 	
+	virtual void notify_add_connection() = 0;
+	virtual void notify_remove_connection(int i) = 0;
+	
+	
 	protected:
 	
 	bool try_to_split();
 	void run_cell_type();
+	
+	
 	
 	
 	public:
@@ -73,6 +79,8 @@ class Cell{
 	void simulation_step();
 	bool is_stuck_to_cell(Cell*);
 	void force_add_adhesion_connection(std::shared_ptr<AdhesionConnection>);
+	
+	bool willing_for_connection(); // true if it can connect, false if not
 	
 	Cell(Environment*, CellRenderManager*);
 	Cell(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations);

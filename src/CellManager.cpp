@@ -143,7 +143,11 @@ void CellRenderManager::delete_cell(Cell* cell_ptr){
 	
 	
 }
-
+void CellRenderManager::add_adhesion_connection(std::weak_ptr<AdhesionConnection> new_conn){
+	
+	adhesion_connections.push_back(new_conn);
+	
+}
 
 
 
@@ -160,7 +164,7 @@ std::vector<Cell*> CellRenderManager::find_touching_cells(Cell* client_cell){
 
 
 void CellRenderManager::simulation_step(){
-	
+	std::cout<<"new frame\n";
 	for (int i = 0; i < static_cast<int>(cell_list.size()); i++){
 		cell_list[i]->simulation_step();
 		
@@ -174,10 +178,13 @@ void CellRenderManager::simulation_step(){
 		if (auto current_conn = adhesion_connections[i].lock()){
 			current_conn->simulation_step();
 		}else{
+			std::cout<<"remove\n";
 			adhesion_connections.erase(adhesion_connections.begin() + i);
+			i--;
+			
 		}
 	}
-	
+	std::cout<<"made it\n";
 	
 	for (int i = 0; i<static_cast<int>(cell_list.size()); i++){
 		for (int j = i+1; j < static_cast<int>(cell_list.size()); j++){
@@ -188,14 +195,9 @@ void CellRenderManager::simulation_step(){
 				collision_list[i].push_back(cell_list[j].get());
 				collision_list[j].push_back(cell_list[i].get());
 				
-				std::shared_ptr<AdhesionConnection> new_conn(new AdhesionConnection(cell_list[i].get(), cell_list[j].get()));
 				
-				cell_list[i]->force_add_adhesion_connection(new_conn); // give ownership to the two cells
-				cell_list[j]->force_add_adhesion_connection(new_conn);
 				
-				adhesion_connections.push_back(new_conn);
 				
-				std::cout<<"add collision\n";
 				
 				
 			}
@@ -205,7 +207,7 @@ void CellRenderManager::simulation_step(){
 		
 	}
 	
-	
+	std::cout<<"finished\n";
 }
 
 void CellRenderManager::render_step(){

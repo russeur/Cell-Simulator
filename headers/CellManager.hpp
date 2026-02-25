@@ -37,7 +37,7 @@ class CellRenderManager{
 	//void add_cell(std::unique_ptr<Cell_Render>); // Cell Manager will now take care and own this pointer/cell from now on
 	void add_cell(Position2D, MoleculeConcentrations);
 	void delete_cell(Cell*);
-	
+	void add_adhesion_connection(std::weak_ptr<AdhesionConnection>);
 	
 	std::vector<Cell*> find_touching_cells(Cell*);
 	//find light, so that eye cells can work.

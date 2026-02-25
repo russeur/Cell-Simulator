@@ -15,6 +15,8 @@ struct CellVert{
 
 class Cell_Render: public Cell{
 	
+	void notify_add_connection() override;
+	void notify_remove_connection(int i) override;
 	
 	Render_Rect_Manager<CellVert>* render_rect_man;
 	Window* window;
