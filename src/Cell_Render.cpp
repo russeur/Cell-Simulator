@@ -51,13 +51,13 @@ void Cell_Render::render_step(){
 	render_rect_man->get_vertex(rect_id, 3).x = top_left.x;
 	render_rect_man->get_vertex(rect_id, 3).y = top_left.y;
 	
-	render_rect_man->set_rect_pos(angle_notifier_id, window->screen_to_UV_pos(this->pos - Position2D{2.5, 2.5} + Position2D{size * std::cos(angle_rads), size * -std::sin(angle_rads)}));
+	render_rect_man->set_rect_pos(angle_notifier_id, window->screen_to_UV_pos(this->pos - Position2D{2.5, 2.5} + Position2D{size * static_cast<float>(cos(angle_rads)), size * -static_cast<int>(sin(angle_rads))}));
 	
 	
 	
 	
 	
-	for (int i = 0;i < adhesion_markers.size(); i++){
+	for (int i = 0;i < static_cast<int>(adhesion_markers.size()); i++){
 		
 		render_rect_man->set_rect_pos(adhesion_markers[i], window->screen_to_UV_pos(Position2D{-2.5, -2.5} + stuck_cells[i]->get_conn_global_location(dynamic_cast<Cell*>(this))));
 		
@@ -75,7 +75,7 @@ Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position
 	this->render_rect_man = render_rect_man;
 	this->window = window;
 	std::cout<<"s: "<<size<<"\n";
-	rect_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{size, size}), window->screen_to_UV_vector(Position2D{size*2.0, size*2.0}), 0.0f, 0.0f, .5f, .5f, .2f);
+	rect_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{size, size}), window->screen_to_UV_vector(Position2D{size*2.0f, size*2.0f}), 0.0f, 0.0f, .5f, .5f, .2f);
 	
 	render_rect_man->get_vertex(rect_id, 0).tx = 0.0;
 	render_rect_man->get_vertex(rect_id, 0).ty = 0.0;
@@ -90,7 +90,7 @@ Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position
 	render_rect_man->get_vertex(rect_id, 3).ty = 1.0;
 	
 	
-	angle_notifier_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{2.5, 2.5} + Position2D{size * std::cos(angle_rads), size * -std::sin(angle_rads)}), window->screen_to_UV_vector(Position2D{5, 5}), 0.0f, 0.0f, 1.0f, .5f, .2f);
+	angle_notifier_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{2.5, 2.5} + Position2D{size * static_cast<float>(cos(angle_rads)), size * -static_cast<float>(sin(angle_rads))}), window->screen_to_UV_vector(Position2D{5, 5}), 0.0f, 0.0f, 1.0f, .5f, .2f);
 	
 	render_rect_man->get_vertex(angle_notifier_id, 0).tx = 0.0;
 	render_rect_man->get_vertex(angle_notifier_id, 0).ty = 0.0;

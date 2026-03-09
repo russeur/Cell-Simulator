@@ -5,14 +5,14 @@
 
 void Cell::run_plant_type(){
 	
-	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += .1;
+	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency;
 	
 	env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, .05);
 	
 }
 
 void Cell::split(){
-	std::cout<<"split!\n";
+	
 	inside_concentrations[0] /=2.0;
 	inside_concentrations[1] /=2.0;
 	inside_concentrations[2] /=2.0;
@@ -42,7 +42,7 @@ void Cell::split(){
 }
 
 bool Cell::try_to_split(){
-	//std::cout<<"food: "<<inside_concentrations[static_cast<int>(MoleculeType::FOOD)]<<"\n";
+	
 	if (inside_concentrations[static_cast<int>(MoleculeType::FOOD)] > 70.0){
 		
 		split();
@@ -143,7 +143,7 @@ void Cell::simulation_step(){
 
 bool Cell::is_stuck_to_cell(Cell* client_cell){
 	
-	for (int i = 0;i < stuck_cells.size(); i++){
+	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 		
 		if (stuck_cells[i]->c1 == client_cell || stuck_cells[i]->c2 == client_cell) return true;
 		

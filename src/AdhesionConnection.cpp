@@ -11,9 +11,9 @@ Cell* SpringConnection::get_other_cell(Cell* current_cell){
 Position2D SpringConnection::get_conn_relative_location(Cell* target_cell){
 	if (is_disconnected) return Position2D{0.0, 0.0};
 	if (c1 == target_cell){
-		return Position2D{c1->size * std::cos(c1->angle_rads + c1_angle_rads), c1->size * -std::sin(c1->angle_rads + c1_angle_rads)};
+		return Position2D{c1->size * static_cast<float>(cos(c1->angle_rads + c1_angle_rads)), c1->size * -static_cast<float>(sin(c1->angle_rads + c1_angle_rads))};
 	}
-	else return Position2D{c2->size * std::cos(c2->angle_rads + c2_angle_rads), c2->size * -std::sin(c2->angle_rads + c2_angle_rads)};
+	else return Position2D{c2->size * static_cast<float>(cos(c2->angle_rads + c2_angle_rads)), c2->size * -static_cast<float>(sin(c2->angle_rads + c2_angle_rads))};
 	
 	
 	

@@ -27,12 +27,12 @@ bool CellRenderManager::fix_collision(Cell* cell_a, Cell* cell_b){
 		
 		
 	}else if (false && cell_a->is_stuck_to_cell(cell_b)){
-		
+		/*
 		Position2D sin_cos = {dist_vector.x/dist, dist_vector.y/dist}; // now I have a normal vector a
 		
 		cell_a->pos += Position2D{sin_cos.x*overlap*.5f *.8f, sin_cos.y*overlap*.5f *.8f};
 		cell_b->pos -= Position2D{sin_cos.x*overlap*.5f *.8f, sin_cos.y*overlap*.5f *.8f};
-		
+		*/
 		
 		
 		
@@ -70,6 +70,7 @@ bool CellRenderManager::fix_collision(Cell* cell_a, Cell* cell_b){
 		//cell_b->vel = sum_vel  * Position2D{.5f, .5f};
 		
 	}else{
+		/*
 		Position2D sin_cos = {dist_vector.x/dist, dist_vector.y/dist}; // now I have a normal vector a
 		
 		cell_a->pos += Position2D{sin_cos.x*overlap*.5f, sin_cos.y*overlap*.5f};
@@ -86,7 +87,7 @@ bool CellRenderManager::fix_collision(Cell* cell_a, Cell* cell_b){
 		cell_a->vel = cell_a->vel * Position2D{bounce_decay, bounce_decay};
 		cell_b->vel = cell_b->vel * Position2D{bounce_decay, bounce_decay};
 		
-		
+		*/
 		
 	}
 	
@@ -168,7 +169,7 @@ void CellRenderManager::simulation_step(){
 	for (int i = 0; i < static_cast<int>(cell_list.size()); i++){
 		cell_list[i]->simulation_step();
 		
-		bool x = fix_wall_collisions(cell_list[i].get());
+		fix_wall_collisions(cell_list[i].get());
 		
 		collision_list[i].clear();
 		
@@ -212,7 +213,7 @@ void CellRenderManager::simulation_step(){
 
 void CellRenderManager::render_step(){
 	
-	for (int i = 0; i < cell_list.size(); i++){
+	for (int i = 0; i < static_cast<int>(cell_list.size()); i++){
 		static_cast<Cell_Render*>(cell_list[i].get())->render_step();
 	}
 	

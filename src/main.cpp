@@ -67,7 +67,7 @@ int main() {
 		int x_idx = t%env.world_dim;
 		int y_idx = (t-x_idx) / env.world_dim;
 		
-		heat_ids[t] = rect_manager.new_rect(window->screen_to_UV_pos(Position2D{x_idx * env.square_size, y_idx * env.square_size}), window->screen_to_UV_vector(Position2D{env.square_size, env.square_size}), 0.0f);
+		heat_ids[t] = rect_manager.new_rect(window->screen_to_UV_pos(Position2D{static_cast<float>(x_idx * env.square_size), static_cast<float>(y_idx * env.square_size)}), window->screen_to_UV_vector(Position2D{static_cast<float>(env.square_size), static_cast<float>(env.square_size)}), 0.0f);
 		
 	}
 	
@@ -158,10 +158,10 @@ void run_simulation(Window* window, Environment* env, Render_Rect_Manager<heat_m
 	
 	if (window->get_mouse_button_state(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
 		if (!left_pressed){
-			cell_manager->add_cell(Position2D{window->cursor_x, window->cursor_y}, MoleculeConcentrations{10.0, 0.0, 0.0, 0.0});
+			cell_manager->add_cell(Position2D{static_cast<float>(window->cursor_x), static_cast<float>(window->cursor_y)}, MoleculeConcentrations{10.0, 0.0, 0.0, 0.0});
 		}
 		//env->add_molecule_to_pos(Position2D{window->cursor_x, window->cursor_y}, static_cast<MoleculeType>(mtype), .1);
-		env->add_molecules_to_pos(Position2D{window->cursor_x, window->cursor_y}, MoleculeConcentrations{-.2, .2, .2, 1.0});
+		env->add_molecules_to_pos(Position2D{static_cast<float>(window->cursor_x), static_cast<float>(window->cursor_y)}, MoleculeConcentrations{-.2, .2, .2, 1.0});
 		left_pressed = true;
 	}else left_pressed = false;
 	

@@ -25,7 +25,7 @@ enum CellType{
 
 
 
-
+constexpr float plant_cell_efficiency = .01;
 
 class Cell{
 	
@@ -46,6 +46,8 @@ class Cell{
 	
 	public:
 	
+	
+	
 	Environment* env;
 	CellRenderManager* cell_manager;
 	CellType cell_type = CellType::NONE; // chosen from starting_genes
@@ -53,10 +55,10 @@ class Cell{
 	float mass = 0; // mass and volume in this case are equivelent
 	
 	Position2D pos = Position2D{0, 0}; // based on center of cell/circle
-	double angle_rads = 0; // in radians
+	float angle_rads = 0; // in radians
 	
 	Position2D vel = Position2D{0.0, 0.0};
-	double angle_vel = 0; // in rans
+	float angle_vel = 0; // in rans
 	
 	
 	
