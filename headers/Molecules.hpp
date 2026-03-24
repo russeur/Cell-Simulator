@@ -17,4 +17,8 @@ enum MoleculeType{
 
 using MoleculeConcentrations = std::array<float, number_of_molecule_types>;
 
-
+enum ConcComparisonType{
+	INSIDE, 
+	OUTSIDE,
+	DIFF // outside-inside
+};

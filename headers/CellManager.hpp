@@ -36,6 +36,7 @@ class CellRenderManager{
 	
 	//void add_cell(std::unique_ptr<Cell_Render>); // Cell Manager will now take care and own this pointer/cell from now on
 	void add_cell(Position2D, MoleculeConcentrations);
+	void add_cell(Position2D, MoleculeConcentrations, const Genetics::StartingDNA& parent_dna);
 	void delete_cell(Cell*);
 	void add_adhesion_connection(std::weak_ptr<AdhesionConnection>);
 	

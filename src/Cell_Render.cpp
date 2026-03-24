@@ -51,14 +51,49 @@ void Cell_Render::render_step(){
 	render_rect_man->get_vertex(rect_id, 3).x = top_left.x;
 	render_rect_man->get_vertex(rect_id, 3).y = top_left.y;
 	
-	render_rect_man->set_rect_pos(angle_notifier_id, window->screen_to_UV_pos(this->pos - Position2D{2.5, 2.5} + Position2D{size * static_cast<float>(cos(angle_rads)), size * -static_cast<int>(sin(angle_rads))}));
+	
+	float r, g, b;
+	switch (cell_type){
+		case CellType::NONE:
+			r = .10; g = .1; b = .1;
+			break;
+		case CellType::EATER:
+			r = .7; g = .1; b = .1;
+			break;
+		case CellType::PLANT:
+			r = .1; g = .7; b = .1;
+			
+			break;
+		
+	}
+	render_rect_man->get_vertex(rect_id, 0).r = r;
+	render_rect_man->get_vertex(rect_id, 0).g = g;
+	render_rect_man->get_vertex(rect_id, 0).b = b;
+	
+	render_rect_man->get_vertex(rect_id, 1).r = r;
+	render_rect_man->get_vertex(rect_id, 1).g = g;
+	render_rect_man->get_vertex(rect_id, 1).b = b;
+	
+	render_rect_man->get_vertex(rect_id, 2).r = r;
+	render_rect_man->get_vertex(rect_id, 2).g = g;
+	render_rect_man->get_vertex(rect_id, 2).b = b;
+	
+	render_rect_man->get_vertex(rect_id, 3).r = r;
+	render_rect_man->get_vertex(rect_id, 3).g = g;
+	render_rect_man->get_vertex(rect_id, 3).b = b;
+	
+	
+	
+	render_rect_man->set_rect_pos(angle_notifier_id, window->screen_to_UV_pos(this->pos - Position2D{2.5, 2.5} + Position2D{size * static_cast<float>(cos(angle_rads)), size * -static_cast<float>(sin(angle_rads))}));
 	
 	
 	
 	
 	
 	for (int i = 0;i < static_cast<int>(adhesion_markers.size()); i++){
-		
+		if (stuck_cells[i]->get_is_disconnected()){
+			continue;
+		}
 		render_rect_man->set_rect_pos(adhesion_markers[i], window->screen_to_UV_pos(Position2D{-2.5, -2.5} + stuck_cells[i]->get_conn_global_location(dynamic_cast<Cell*>(this))));
 		
 		
@@ -74,8 +109,24 @@ Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position
 	
 	this->render_rect_man = render_rect_man;
 	this->window = window;
-	std::cout<<"s: "<<size<<"\n";
-	rect_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{size, size}), window->screen_to_UV_vector(Position2D{size*2.0f, size*2.0f}), 0.0f, 0.0f, .5f, .5f, .2f);
+	//std::cout<<"s: "<<size<<"\n";
+	
+	float r, g, b;
+	switch (cell_type){
+		case CellType::NONE:
+			r = .10; g = .1; b = .1;
+			break;
+		case CellType::EATER:
+			r = .7; g = .1; b = .1;
+			break;
+		case CellType::PLANT:
+			r = .1; g = .7; b = .1;
+			
+			break;
+		
+	}
+	
+	rect_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{size, size}), window->screen_to_UV_vector(Position2D{size*2.0f, size*2.0f}), 0.0f, 0.0f, r, g, b);
 	
 	render_rect_man->get_vertex(rect_id, 0).tx = 0.0;
 	render_rect_man->get_vertex(rect_id, 0).ty = 0.0;
@@ -106,5 +157,68 @@ Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position
 	
 	
 }
+Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_dna, Render_Rect_Manager<CellVert>* render_rect_man, Window* window) : Cell(env, cell_man, pos, conc, parent_dna){
+	this->render_rect_man = render_rect_man;
+	this->window = window;
+	//std::cout<<"s: "<<size<<"\n";
+	
+	float r, g, b;
+	switch (cell_type){
+		case CellType::NONE:
+			r = .10; g = .1; b = .1;
+			break;
+		case CellType::EATER:
+			r = .7; g = .1; b = .1;
+			break;
+		case CellType::PLANT:
+			r = .1; g = .7; b = .1;
+			
+			break;
+		
+	}
+	
+	rect_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{size, size}), window->screen_to_UV_vector(Position2D{size*2.0f, size*2.0f}), 0.0f, 0.0f, r, g, b);
+	
+	render_rect_man->get_vertex(rect_id, 0).tx = 0.0;
+	render_rect_man->get_vertex(rect_id, 0).ty = 0.0;
+	
+	render_rect_man->get_vertex(rect_id, 1).tx = 1.0;
+	render_rect_man->get_vertex(rect_id, 1).ty = 0.0;
+	
+	render_rect_man->get_vertex(rect_id, 2).tx = 0.0;
+	render_rect_man->get_vertex(rect_id, 2).ty = 1.0;
+	
+	render_rect_man->get_vertex(rect_id, 3).tx = 1.0;
+	render_rect_man->get_vertex(rect_id, 3).ty = 1.0;
+	
+	
+	angle_notifier_id = render_rect_man->new_rect(window->screen_to_UV_pos(this->pos - Position2D{2.5, 2.5} + Position2D{size * static_cast<float>(cos(angle_rads)), size * -static_cast<float>(sin(angle_rads))}), window->screen_to_UV_vector(Position2D{5, 5}), 0.0f, 0.0f, 1.0f, .5f, .2f);
+	
+	render_rect_man->get_vertex(angle_notifier_id, 0).tx = 0.0;
+	render_rect_man->get_vertex(angle_notifier_id, 0).ty = 0.0;
+								
+	render_rect_man->get_vertex(angle_notifier_id, 1).tx = 1.0;
+	render_rect_man->get_vertex(angle_notifier_id, 1).ty = 0.0;
+								
+	render_rect_man->get_vertex(angle_notifier_id, 2).tx = 0.0;
+	render_rect_man->get_vertex(angle_notifier_id, 2).ty = 1.0;
+								
+	render_rect_man->get_vertex(angle_notifier_id, 3).tx = 1.0;
+	render_rect_man->get_vertex(angle_notifier_id, 3).ty = 1.0;
+	
+}
 
+Cell_Render::~Cell_Render(){
+	
+	for (int i = 0;i < static_cast<int>(adhesion_markers.size()); i++){
+		
+		render_rect_man->destroy_rect(adhesion_markers[i]);
+		
+		
+		
+	}
+	render_rect_man->destroy_rect(rect_id);
+	render_rect_man->destroy_rect(angle_notifier_id);
+	
+}
 

@@ -76,9 +76,9 @@ void SpringConnection::simulation_step(){
 	}
 	
 	Position2D normal = Position2D{dif.x / length, dif.y/length};
-	const float restLength = 0.5;
+	const float restLength = 0.5*.14;
 	float displacement = length - restLength;
-	const float k = .5;
+	const float k = .5*.14;
 	Position2D springForce = Position2D{-k * displacement * normal.x, -k * displacement * normal.y};
 	
 	
@@ -90,7 +90,7 @@ void SpringConnection::simulation_step(){
 	Position2D c2_vel_sum = c2->vel + Position2D{c2->angle_vel * c2_connection_point.y, -c2->angle_vel * c2_connection_point.x};
 	
 	Position2D rel_vel = c2_vel_sum - c1_vel_sum;
-	const float damping = .5;
+	const float damping = .5*.14;
 	float dampingForceMag = -(rel_vel.x * normal.x + rel_vel.y * normal.y) * damping;
 	Position2D dampingForce = Position2D{dampingForceMag * normal.x, dampingForceMag * normal.y};
 	Position2D sum_force = springForce + dampingForce;
@@ -99,7 +99,7 @@ void SpringConnection::simulation_step(){
 	
 	
 	next_c1_force = Position2D{-1.0, -1.0} * sum_force;
-	next_c2_force = sum_force;
+	next_c2_force = sum_force; 
 	
 	
 	next_c1_torque = (c1_connection_point.x * sum_force.y - c1_connection_point.y * sum_force.x);// + relativeOmega*angularDamping;
@@ -122,7 +122,7 @@ SpringConnection::SpringConnection(Cell* c1, Cell* c2){
 	
 	Position2D vector_dif = c1->pos - c2->pos;
 				
-				
+	if (vector_dif.x == 0.0f) vector_dif.x = .0001;
 	float port_angle = std::atan(-vector_dif.y/vector_dif.x);
 	
 	if (vector_dif.x >= 0){
@@ -139,7 +139,7 @@ SpringConnection::SpringConnection(Cell* c1, Cell* c2){
 }
 
 SpringConnection::~SpringConnection(){
-	std::cout<<"bye bye\n";
+	 
 }
 
 

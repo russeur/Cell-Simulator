@@ -5,7 +5,7 @@ project(Galaga VERSION 1.0.0)
 cmake_policy(SET CMP0072 NEW)
 
 find_package(OpenGL REQUIRED)
-add_compile_options(-Wall)
+add_compile_options(-Wall -g -O3)
 
 
 add_executable(main 
@@ -25,6 +25,7 @@ src/Cell.cpp
 src/Cell_Render.cpp
 src/CellManager.cpp
 src/AdhesionConnection.cpp
+src/DNA.cpp
 )
 
 target_include_directories(main PRIVATE dependencies headers)

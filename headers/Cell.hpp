@@ -3,6 +3,7 @@
 
 #include "Molecules.hpp"
 #include "Environment.hpp"
+#include "DNA.hpp"
 
 #include <memory>
 #include <cmath>
@@ -12,12 +13,6 @@ class CellRenderManager;
 class AdhesionConnection;
 
 
-enum CellType{
-	NONE,
-	EATER,
-	PLANT
-	
-};
 
 
 
@@ -25,24 +20,28 @@ enum CellType{
 
 
 
-constexpr float plant_cell_efficiency = .01;
+
+constexpr float plant_cell_efficiency = .0014;
 
 class Cell{
 	
 	void run_plant_type();
+	void run_eater_type();
 	void split();
 	
 	virtual void notify_add_connection() = 0;
 	virtual void notify_remove_connection(int i) = 0;
 	
+	bool is_dead = false; //if true then this cell shouldn't be able to do anything and is really just waiting to be safely freed by manager
+	
 	
 	protected:
 	
-	bool try_to_split();
+	bool try_to_split(); 
 	void run_cell_type();
 	
 	
-	
+	Genetics::StartingDNA start_dna;
 	
 	public:
 	
@@ -83,11 +82,12 @@ class Cell{
 	void force_add_adhesion_connection(std::shared_ptr<AdhesionConnection>);
 	
 	bool willing_for_connection(); // true if it can connect, false if not
+	bool get_is_dead();
 	
 	Cell(Environment*, CellRenderManager*);
 	Cell(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations);
-	
-	
+	Cell(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations, const Genetics::StartingDNA& parent_dna);
+	virtual ~Cell();
 	
 	
 	

@@ -5,11 +5,54 @@
 
 void Cell::run_plant_type(){
 	
-	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency;
+	//std::cout<<"start plant/n";
+	float mag = .5 * (10.0f - env->sample_pos(pos)[MoleculeType::FOOD]);
 	
-	env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, .05);
+	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*mag;
+	
+	
+	env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, mag*.01);
 	
 }
+void Cell::run_eater_type(){
+	//std::cout<<" start eater ";
+	std::vector<Cell*> touching_cells = cell_manager->find_touching_cells(this);
+	
+	for (int i = 0; i < static_cast<int>(touching_cells.size()); i++){
+		
+		if (touching_cells[i]->cell_type == CellType::PLANT){
+			if (true || env->sample_pos(pos)[MoleculeType::OXYGEN] > .1){
+				inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*10*.5;
+				touching_cells[i]->inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency*10;
+				env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, -.05*4);
+			}
+		}
+		
+	}
+	//std::cout<<"finished new ";
+	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
+		if (stuck_cells[i]->get_is_disconnected()){
+			
+			std::cout<<"DISCONNECTION\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+		}
+		Cell* other = stuck_cells[i]->get_other_cell(this);
+		if (other->cell_type == CellType::PLANT){
+			if (true || env->sample_pos(pos)[MoleculeType::OXYGEN] > .5){
+				inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*10*.5;
+				other->inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency*10;
+				env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, -.05*4);
+			}
+		}
+	
+	}
+	//std::cout<<"good eater\n";
+	
+	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency;
+	
+	//env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, .05);
+	
+}
+
 
 void Cell::split(){
 	
@@ -27,6 +70,10 @@ void Cell::split(){
 	}
 	stuck_cells.clear();
 	
+	cell_type = CellType::NONE;
+	start_dna.reset_life();
+	start_dna.mutate();
+	
 	
 	mass = inside_concentrations[0];
 	size = sqrt(mass/M_PI) * 10;
@@ -36,14 +83,14 @@ void Cell::split(){
 	
 	
 	
-	cell_manager->add_cell(pos + Position2D{-2*size, 0}, inside_concentrations);
+	cell_manager->add_cell(pos + Position2D{-2*size, 0}, inside_concentrations, start_dna);
 	
 	
 }
 
 bool Cell::try_to_split(){
 	
-	if (inside_concentrations[static_cast<int>(MoleculeType::FOOD)] > 70.0){
+	if (inside_concentrations[static_cast<int>(MoleculeType::FOOD)] > 10.0){
 		
 		split();
 		return true;
@@ -57,6 +104,7 @@ void Cell::run_cell_type(){
 		case CellType::NONE:
 			break;
 		case CellType::EATER:
+			run_eater_type();
 			break;
 		case CellType::PLANT:
 			run_plant_type();
@@ -77,10 +125,16 @@ void Cell::add_torque(float torque){
 
 
 void Cell::simulation_step(){
+	//std::cout<<"start";
+	if (inside_concentrations[0] < 1.4){
+		is_dead = true;
+		cell_manager->delete_cell(this);
+		return;
+	}
 	
 	try_to_split();
 	
-	run_cell_type();
+	
 	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 		if (!stuck_cells[i]->get_is_disconnected()){
 			
@@ -89,6 +143,7 @@ void Cell::simulation_step(){
 			
 			stuck_cells.erase(stuck_cells.begin() + i);
 			notify_remove_connection(i);
+			i--;
 		}
 		
 	}
@@ -97,28 +152,25 @@ void Cell::simulation_step(){
 	
 	angle_rads += angle_vel;
 	
-	env->add_molecule_to_pos(pos, MoleculeType::FOOD, .05);
+	
 	
 	mass = inside_concentrations[0];
 	size = sqrt(mass/M_PI) * 10;
 	
 	
 	
-	//cell_group->add_force(pos+Position2D{size, 0}, Position2D{-.005, .001});
-	
-	//angle_velocity = .01;
-	//angle_rads += angle_velocity;
-	
-	
-	
-	//pos += vel;
-	//vel = Position2D{vel.x*.99, vel.y*.99};
-	
-	
+	if (!start_dna.is_past_childhood()){
+		start_dna.simulate_step(env->sample_pos(pos), env->sample_pos(pos + Position2D{size, size}));
+		
+		if (start_dna.is_past_childhood()){
+			//std::cout<<"adult: "<<start_dna.get_determined_cell_type();
+			cell_type = start_dna.get_determined_cell_type();
+		}
+	}
 	
 	//get touching cells in order for adhesion, doesn't need to be fast because you will really ever be touchign like 4 cells max
 	std::vector<Cell*> touching_cells = cell_manager->find_touching_cells(this);
-	
+	//std::cout<<"start touching cells";
 	for (int i = 0; i < static_cast<int>(touching_cells.size()); i++){
 		
 		if (!is_stuck_to_cell(touching_cells[i]) && willing_for_connection() && touching_cells[i]->willing_for_connection()){ // if both me and the other are ready for connection, then do it
@@ -134,9 +186,21 @@ void Cell::simulation_step(){
 		
 	}
 	
+	//std::cout<<" end1\n";
 	
 	
 	
+	
+	
+	
+	run_cell_type();
+	
+	
+	
+	
+	
+	
+	//std::cout<<"end2\n";
 	
 	
 }
@@ -158,24 +222,37 @@ void Cell::force_add_adhesion_connection(std::shared_ptr<AdhesionConnection> new
 }
 
 bool Cell::willing_for_connection(){
-	
-	if (stuck_cells.size() < 3){
-		return true;
+	if (stuck_cells.size() >= 3) return false;
+	switch (cell_type){
+		case CellType::NONE:
+			return false;
+			break;
+		case CellType::EATER:
+			return true;
+			break;
+		case CellType::PLANT:
+			return true;
+			break;
+		
 	}
-	else return false;
+	return false;
 	
 }
+
+bool Cell::get_is_dead(){
+	return is_dead;
+}
 	
-Cell::Cell(Environment* env, CellRenderManager*){
+Cell::Cell(Environment* env, CellRenderManager*) : start_dna(true){
 	
-	cell_type = CellType::PLANT;
+	cell_type = CellType::NONE;
 	
 	this->env = env;
 	
 }
-Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc){
+Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc) : start_dna(true){
 	
-	cell_type = CellType::PLANT;
+	cell_type = CellType::NONE;
 	
 	this->env = env;
 	this->cell_manager = cell_man;
@@ -189,4 +266,25 @@ Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, Molecu
 	
 }
 
+Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_dna) : start_dna(parent_dna){
+	start_dna.mutate();
+	cell_type = CellType::NONE;
+	
+	this->env = env;
+	this->cell_manager = cell_man;
+	this->pos = pos;
+	this->inside_concentrations = conc;
+	
+	
+	mass = inside_concentrations[0];
+	size = sqrt(mass/M_PI)*10;
+}
 
+
+Cell::~Cell(){
+	for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
+		
+		stuck_cells[i]->disconnect_connection();
+		
+	}
+}

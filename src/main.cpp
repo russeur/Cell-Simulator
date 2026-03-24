@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <memory>
 
+
 #include "CellManager.hpp"
 
 
@@ -31,7 +32,7 @@ int main() {
 	
 	
 	
-	
+	srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));srand(time(NULL));
 	
 	
 	
@@ -132,12 +133,17 @@ int mtype = 0;
 bool l_pressed = false;
 bool r_pressed = false;
 bool left_pressed = false;
+bool vis = true;
 void run_simulation(Window* window, Environment* env, Render_Rect_Manager<heat_map_vert>* rect_manager, Render_Rect_Manager<CellVert>* cell_rect_manager, CellRenderManager* cell_manager){
 	
 	
 	
-	
-	
+	if ((window->get_key_button_state(GLFW_KEY_0) == GLFW_PRESS)){
+		vis = false;
+	}
+	if ((window->get_key_button_state(GLFW_KEY_1) == GLFW_PRESS)){
+		vis = true;
+	}
 	
 	if (!l_pressed && (window->get_key_button_state(GLFW_KEY_LEFT) == GLFW_PRESS)){
 		mtype--;
@@ -177,15 +183,23 @@ void run_simulation(Window* window, Environment* env, Render_Rect_Manager<heat_m
 	}
 	env->simulation_step();
 	cell_manager->simulation_step();
-	cell_manager->render_step();
-	
-	window->clear_window();
-	
-	rect_manager->ready_for_draw();
-	rect_manager->draw_all();
-	
-	cell_rect_manager->ready_for_draw();
-	cell_rect_manager->draw_all();
+	//std::cout<<"start render\n";
+	if (vis){
+		cell_manager->render_step();
+		//std::cout<<"end render\n";
+		window->clear_window();
+		
+		rect_manager->ready_for_draw();
+		
+			
+			rect_manager->draw_all();
+		
+		
+		cell_rect_manager->ready_for_draw();
+		cell_rect_manager->draw_all();
+	}else{
+		window->clear_window();
+	}
 	
 	
 	

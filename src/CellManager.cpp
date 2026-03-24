@@ -6,14 +6,15 @@ bool CellRenderManager::fix_collision(Cell* cell_a, Cell* cell_b){
 	
 	
 	Position2D dist_vector = cell_a->pos - cell_b->pos;
-	float dist = sqrt((dist_vector.x*dist_vector.x) + (dist_vector.y*dist_vector.y));
-	if (dist == 0) return false;
-	float overlap = cell_a->size + cell_b->size - dist;
-	if (overlap <= 0) return false;
+	float f_dist = (dist_vector.x*dist_vector.x) + (dist_vector.y*dist_vector.y);
+	if (f_dist == 0) return false;
+	float f_overlap = (cell_a->size + cell_b->size) * (cell_a->size + cell_b->size) - f_dist;
+	if (f_overlap <= 0) return false;
 	
 	//we know they are colliding now!!
 	
-	
+	float dist = sqrt((dist_vector.x*dist_vector.x) + (dist_vector.y*dist_vector.y));
+	float overlap = (cell_a->size + cell_b->size) - dist;
 	
 	if (cell_a->vel == Position2D{0.0, 0.0} && cell_b->vel == Position2D{0.0, 0.0}){
 		
@@ -133,15 +134,26 @@ void CellRenderManager::add_cell(Position2D pos, MoleculeConcentrations conc){
 	
 	
 }
+void CellRenderManager::add_cell(Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_dna){
+	cell_list.push_back(std::make_unique<Cell_Render>(env, this, pos, conc, parent_dna, render_rect_man, window));
+	
+	collision_list.push_back(std::vector<Cell*>());
+	
+}
+
 void CellRenderManager::delete_cell(Cell* cell_ptr){
+	/*
 	for (int i = 0; i < static_cast<int>(cell_list.size()); i++){
 		if (cell_list[i].get() == cell_ptr){
+			
 			cell_list.erase(cell_list.begin() + i);
+			
 			collision_list.erase(collision_list.begin() + i);
+			
 			return;
 		}
 	}
-	
+	*/
 	
 }
 void CellRenderManager::add_adhesion_connection(std::weak_ptr<AdhesionConnection> new_conn){
@@ -165,15 +177,22 @@ std::vector<Cell*> CellRenderManager::find_touching_cells(Cell* client_cell){
 
 
 void CellRenderManager::simulation_step(){
+	//std::cout<<"start sim\n";
+	
+	
 	
 	for (int i = 0; i < static_cast<int>(cell_list.size()); i++){
+		
 		cell_list[i]->simulation_step();
 		
 		fix_wall_collisions(cell_list[i].get());
 		
 		collision_list[i].clear();
 		
+		
 	}
+	
+	
 	
 	for (int i = 0; i < static_cast<int>(adhesion_connections.size()); i++){
 		if (auto current_conn = adhesion_connections[i].lock()){
@@ -186,6 +205,18 @@ void CellRenderManager::simulation_step(){
 		}
 	}
 	
+	for (int i = 0; i < static_cast<int>(cell_list.size()); i++){
+		if (cell_list[i]->get_is_dead()){
+			
+			cell_list.erase(cell_list.begin() + i);
+			
+			collision_list.erase(collision_list.begin() + i);
+			i--;
+			
+			return;
+			
+		}
+	}
 	
 	for (int i = 0; i<static_cast<int>(cell_list.size()); i++){
 		for (int j = i+1; j < static_cast<int>(cell_list.size()); j++){
@@ -207,7 +238,7 @@ void CellRenderManager::simulation_step(){
 		
 		
 	}
-	
+	//std::cout<<"end sim\n";
 	
 }
 
