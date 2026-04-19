@@ -157,7 +157,7 @@ Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position
 	
 	
 }
-Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_dna, Render_Rect_Manager<CellVert>* render_rect_man, Window* window) : Cell(env, cell_man, pos, conc, parent_dna){
+Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_start_dna, const Genetics::RunningDNA& parent_run_dna, Render_Rect_Manager<CellVert>* render_rect_man, Window* window) : Cell(env, cell_man, pos, conc, parent_start_dna, parent_run_dna){
 	this->render_rect_man = render_rect_man;
 	this->window = window;
 	//std::cout<<"s: "<<size<<"\n";

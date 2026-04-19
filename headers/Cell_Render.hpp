@@ -34,7 +34,7 @@ class Cell_Render: public Cell{
 	
 	
 	Cell_Render(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations, Render_Rect_Manager<CellVert>*, Window*);
-	Cell_Render(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations, const Genetics::StartingDNA& parent_dna, Render_Rect_Manager<CellVert>*, Window*);
+	Cell_Render(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations, const Genetics::StartingDNA& parent_start_dna, const Genetics::RunningDNA& parent_run_dna, Render_Rect_Manager<CellVert>*, Window*);
 	~Cell_Render();
 	
 	

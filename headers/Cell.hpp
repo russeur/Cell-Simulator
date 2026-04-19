@@ -29,6 +29,11 @@ class Cell{
 	void run_eater_type();
 	void split();
 	
+	
+	void run_oxy_to_acid(ActionLocation destination);
+	void run_food_to_oxy(ActionLocation destination);
+	void do_all_dna_actions();
+	
 	virtual void notify_add_connection() = 0;
 	virtual void notify_remove_connection(int i) = 0;
 	
@@ -37,11 +42,14 @@ class Cell{
 	
 	protected:
 	
+	float cell_effiency = 1.0; // very general metric that will mostly only be lowered by bad things, like overexposure to OXYGEN
+	
 	bool try_to_split(); 
 	void run_cell_type();
 	
 	
 	Genetics::StartingDNA start_dna;
+	Genetics::RunningDNA running_dna;
 	
 	public:
 	
@@ -81,12 +89,13 @@ class Cell{
 	bool is_stuck_to_cell(Cell*);
 	void force_add_adhesion_connection(std::shared_ptr<AdhesionConnection>);
 	
+	
 	bool willing_for_connection(); // true if it can connect, false if not
 	bool get_is_dead();
 	
 	Cell(Environment*, CellRenderManager*);
 	Cell(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations);
-	Cell(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations, const Genetics::StartingDNA& parent_dna);
+	Cell(Environment*, CellRenderManager*, Position2D, MoleculeConcentrations, const Genetics::StartingDNA& parent_start_dna, const Genetics::RunningDNA& parent_run_dna);
 	virtual ~Cell();
 	
 	

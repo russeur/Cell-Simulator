@@ -6,25 +6,25 @@
 void Cell::run_plant_type(){
 	
 	//std::cout<<"start plant/n";
-	float mag = .5 * (10.0f - env->sample_pos(pos)[MoleculeType::FOOD]);
+	float mag = .5 * (10.0f - env->sample_pos(pos)[static_cast<int>(MoleculeType::FOOD)]);
 	
-	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*mag;
+	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*mag*cell_effiency;
 	
-	
-	env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, mag*.01);
+	inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] += mag*.01;
+	//env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, mag*.01);
 	
 }
 void Cell::run_eater_type(){
 	//std::cout<<" start eater ";
 	std::vector<Cell*> touching_cells = cell_manager->find_touching_cells(this);
-	
+	//std::cout<<inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)]<<"\n";
 	for (int i = 0; i < static_cast<int>(touching_cells.size()); i++){
 		
 		if (touching_cells[i]->cell_type == CellType::PLANT){
-			if (true || env->sample_pos(pos)[MoleculeType::OXYGEN] > .1){
-				inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*10*.5;
-				touching_cells[i]->inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency*10;
-				env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, -.05*4);
+			if (true || env->sample_pos(pos)[static_cast<int>(MoleculeType::OXYGEN)] > .1){
+				inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*10*.5*cell_effiency;
+				touching_cells[i]->inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency*10*cell_effiency;
+				env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, -.05*4*cell_effiency);
 			}
 		}
 		
@@ -37,15 +37,15 @@ void Cell::run_eater_type(){
 		}
 		Cell* other = stuck_cells[i]->get_other_cell(this);
 		if (other->cell_type == CellType::PLANT){
-			if (true || env->sample_pos(pos)[MoleculeType::OXYGEN] > .5){
-				inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*10*.5;
-				other->inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency*10;
-				env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, -.05*4);
+			if (true || env->sample_pos(pos)[static_cast<int>(MoleculeType::OXYGEN)] > .4){
+				inside_concentrations[static_cast<int>(MoleculeType::FOOD)] += plant_cell_efficiency*10*.5*cell_effiency;
+				other->inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency*10*cell_effiency;
+				env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, -.05*4*cell_effiency);
 			}
 		}
 	
 	}
-	//std::cout<<"good eater\n";
+	
 	
 	inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= plant_cell_efficiency;
 	
@@ -71,8 +71,7 @@ void Cell::split(){
 	stuck_cells.clear();
 	
 	cell_type = CellType::NONE;
-	start_dna.reset_life();
-	start_dna.mutate();
+	
 	
 	
 	mass = inside_concentrations[0];
@@ -83,9 +82,88 @@ void Cell::split(){
 	
 	
 	
-	cell_manager->add_cell(pos + Position2D{-2*size, 0}, inside_concentrations, start_dna);
+	cell_manager->add_cell(pos + Position2D{-2*size, 0}, inside_concentrations, start_dna, running_dna);
+	
+	start_dna.reset_life();
+	start_dna.mutate();
+	
+	running_dna.mutate();
 	
 	
+}
+
+void Cell::run_oxy_to_acid(ActionLocation destination){
+	//std::cout<<"do x_to_a\n";
+	const float strength = .01;
+	if (inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] < strength) return;
+	inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] -= strength;
+	
+	switch (destination){
+		case (ActionLocation::INSIDE):
+			
+			inside_concentrations[static_cast<int>(MoleculeType::ACID)] += strength;
+			break;
+		case (ActionLocation::OUTSIDE):
+			
+			env->add_molecule_to_pos(pos, MoleculeType::ACID, strength);
+			break;
+		case (ActionLocation::ATTACHED):
+			
+			inside_concentrations[static_cast<int>(MoleculeType::ACID)] += strength;
+			break;
+		case (ActionLocation::NONE):
+			
+			break;
+		default:
+			std::cout<<"ActionLocation of value '"<<static_cast<int>(destination)<<"' is not an option\n";
+	}
+	
+}
+void Cell::run_food_to_oxy(ActionLocation destination){
+	//std::cout<<"do f_to_o\n";
+	const float strength = .01;
+	switch (destination){
+		case (ActionLocation::INSIDE):
+			inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= strength;
+			inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] += strength;
+			break;
+		case (ActionLocation::OUTSIDE):
+			env->add_molecule_to_pos(pos, MoleculeType::FOOD, -strength);
+			env->add_molecule_to_pos(pos, MoleculeType::OXYGEN, strength);
+			break;
+		case (ActionLocation::ATTACHED):
+			inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= strength;
+			inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] += strength;
+			break;
+		case (ActionLocation::NONE):
+			//inside_concentrations[static_cast<int>(MoleculeType::FOOD)] -= strength;
+			//inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] += strength;
+			break;
+		default:
+			std::cout<<"ActionLocation of value '"<<static_cast<int>(destination)<<"' is not an option\n";
+	}
+	
+	
+	
+}
+
+void Cell::do_all_dna_actions(){
+	
+	running_dna.simulate_step(env->sample_pos(pos), env->sample_pos(pos + Position2D{size, size}));
+	
+	for (int i = 0; i < running_dna.get_number_of_recommended_actions(); i++){
+		switch (running_dna.get_recommended_action(i)){
+			case ActionType::OXY_TO_ACID:
+				run_oxy_to_acid(running_dna.get_recommended_action_location(i));
+				break;
+			case ActionType::FOOD_TO_OXY:
+				run_food_to_oxy(running_dna.get_recommended_action_location(i));
+				break;
+			default:
+				std::cout<<"Action type "<<static_cast<int>(running_dna.get_recommended_action(i))<<" is unknown/n";
+			
+		}
+	}
 }
 
 bool Cell::try_to_split(){
@@ -109,7 +187,8 @@ void Cell::run_cell_type(){
 		case CellType::PLANT:
 			run_plant_type();
 			break;
-		
+		default:
+			std::cout<<"CellType of value '"<<static_cast<int>(cell_type)<<"' is not an option\n";
 	}
 	
 }
@@ -128,6 +207,9 @@ void Cell::simulation_step(){
 	//std::cout<<"start";
 	if (inside_concentrations[0] < 1.4){
 		is_dead = true;
+		
+		env->add_molecules_to_pos(pos, inside_concentrations);
+		
 		cell_manager->delete_cell(this);
 		return;
 	}
@@ -190,11 +272,14 @@ void Cell::simulation_step(){
 	
 	
 	
+	cell_effiency -= abs(inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)])/200000.0;
+	//std::cout<<"cell_effiency: "<<cell_effiency<<"\n";
 	
+	if (cell_effiency < 0.0) cell_effiency = 0.0;
 	
 	
 	run_cell_type();
-	
+	do_all_dna_actions();
 	
 	
 	
@@ -243,14 +328,14 @@ bool Cell::get_is_dead(){
 	return is_dead;
 }
 	
-Cell::Cell(Environment* env, CellRenderManager*) : start_dna(true){
+Cell::Cell(Environment* env, CellRenderManager*) : start_dna(true), running_dna(true){
 	
 	cell_type = CellType::NONE;
 	
 	this->env = env;
 	
 }
-Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc) : start_dna(true){
+Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc) : start_dna(true), running_dna(true){
 	
 	cell_type = CellType::NONE;
 	
@@ -266,8 +351,9 @@ Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, Molecu
 	
 }
 
-Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_dna) : start_dna(parent_dna){
+Cell::Cell(Environment* env, CellRenderManager* cell_man, Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_start_dna, const Genetics::RunningDNA& parent_run_dna) : start_dna(parent_start_dna), running_dna(parent_run_dna){
 	start_dna.mutate();
+	running_dna.mutate();
 	cell_type = CellType::NONE;
 	
 	this->env = env;

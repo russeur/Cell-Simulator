@@ -134,8 +134,8 @@ void CellRenderManager::add_cell(Position2D pos, MoleculeConcentrations conc){
 	
 	
 }
-void CellRenderManager::add_cell(Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_dna){
-	cell_list.push_back(std::make_unique<Cell_Render>(env, this, pos, conc, parent_dna, render_rect_man, window));
+void CellRenderManager::add_cell(Position2D pos, MoleculeConcentrations conc, const Genetics::StartingDNA& parent_start_dna, const Genetics::RunningDNA& parent_run_dna){
+	cell_list.push_back(std::make_unique<Cell_Render>(env, this, pos, conc, parent_start_dna, parent_run_dna, render_rect_man, window));
 	
 	collision_list.push_back(std::vector<Cell*>());
 	

@@ -4,7 +4,7 @@
 
 constexpr int number_of_molecule_types = 5;
 
-enum MoleculeType{
+enum class MoleculeType{
 	FOOD,
 	GOOD_ACID,
 	ACID,
@@ -17,7 +17,7 @@ enum MoleculeType{
 
 using MoleculeConcentrations = std::array<float, number_of_molecule_types>;
 
-enum ConcComparisonType{
+enum class ConcComparisonType{
 	INSIDE, 
 	OUTSIDE,
 	DIFF // outside-inside

@@ -1,14 +1,28 @@
 #pragma once  
-
+#include <vector>
 #include "Molecules.hpp"
 
 
 constexpr int num_of_cell_types = 2; // excludes NONE cell
-enum CellType{
+enum class CellType{
 	NONE,
 	EATER,
 	PLANT
 	
+};
+
+constexpr int num_of_actions = 2;
+enum class ActionType{
+	OXY_TO_ACID, //convert oxygen to acid 
+	FOOD_TO_OXY // convert food to oxygen
+	
+};
+constexpr int num_of_action_locations = 3; // only ever 3 valid locations, NONE does not count
+enum class ActionLocation{
+	INSIDE,
+	OUTSIDE,
+	ATTACHED, // outputs action inside of other cells
+	NONE // the action does not involve doing it at a location
 };
 
 
@@ -24,7 +38,7 @@ namespace Genetics{
 		
 	};
 	ConcentrationTarget get_rand_conc_target(MoleculeType);
-	void mutate_conc_target(ConcentrationTarget*);
+	bool mutate_conc_target(ConcentrationTarget*);
 	
 	
 	constexpr int childhood_duration = 180; //number of frames it takes for a cell from birth to get a celltype
@@ -41,7 +55,7 @@ namespace Genetics{
 			
 		};
 		//
-		CellTypeTargets all_cell_type_targets[num_of_cell_types];
+		CellTypeTargets all_cell_type_targets[num_of_cell_types]; //the actual dna that is passed down from parents and to children
 		
 		
 		//sums are used to find averages since birth to adulthood
@@ -71,4 +85,43 @@ namespace Genetics{
 		
 		
 	};
+
+	class RunningDNA{
+		
+		
+		//static constexpr 
+		struct ActionTypeTarget{
+			
+			ConcentrationTarget concentration_target; // middle of area that activate the action
+			float target_range; // from concerntration target-range to concerntration target+range, the action will happen
+			ActionType action_type;
+			ActionLocation action_location; // output location of the action, the input is always from the inside
+		};
+		
+		
+		static ActionTypeTarget get_rand_action_target();
+		static bool mutate_action_target(ActionTypeTarget*);
+		
+		std::vector<ActionTypeTarget> all_action_targets;  //the actual dna that is passed down from parents and to children
+		
+		std::vector<int> current_recommended_actions; //contains the index of the running_dna/all_action_targets that the cell should run
+		
+		public:
+		
+		void mutate();
+		
+		void simulate_step(MoleculeConcentrations inside_conc, MoleculeConcentrations outside_conc); // this is all that is required every frame to call, all other funtions get values
+		
+		ActionType get_recommended_action(int action_index); 
+		ActionLocation get_recommended_action_location(int action_index);
+		int get_number_of_recommended_actions();
+		
+		const ActionTypeTarget* get_targets() const;
+		int get_number_of_targets() const;
+		
+		RunningDNA(const RunningDNA&); // copy the dna into this one
+		RunningDNA(bool random_dna); // true will give you random dna, false will give you all 0s
+		
+	};
+
 };
