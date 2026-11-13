@@ -26,14 +26,24 @@ src/Cell_Render.cpp
 src/CellManager.cpp
 src/AdhesionConnection.cpp
 src/DNA.cpp
+src/MyGui.cpp
+
+dependencies/imgui/imgui.cpp
+dependencies/imgui/imgui_draw.cpp
+dependencies/imgui/imgui_tables.cpp
+dependencies/imgui/imgui_widgets.cpp
+dependencies/imgui/backends/imgui_impl_glfw.cpp
+dependencies/imgui/backends/imgui_impl_opengl3.cpp
+dependencies/imgui/implot.cpp
+dependencies/imgui/implot_items.cpp
 )
 
-target_include_directories(main PRIVATE dependencies headers)
+target_include_directories(main PRIVATE dependencies headers dependencies/imgui dependencies/imgui/backends)
 
 
 target_link_directories(main PRIVATE lib)
 
-target_link_libraries(main glfw3 OpenGL::GL)
+target_link_libraries(main glfw OpenGL::GL)
 
 
 

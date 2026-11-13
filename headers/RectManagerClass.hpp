@@ -96,6 +96,14 @@ class Render_Rect_Manager : public Rect_Manager<VertType>{
 };
 
 
+
+
+
+
+
+
+
+
 //TEMPLATE DEFINITIONS
 
 template <typename VertType>

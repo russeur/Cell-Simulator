@@ -76,9 +76,9 @@ struct Position2D{
     }
 
 
-    bool operator ==(const Position2D&& other){
-        return ((x==other.x)&&(y==other.y));
-    }
+    //bool operator ==(const Position2D&& other){
+    //    return ((x==other.x)&&(y==other.y));
+    //}
 };
 struct Position3D{
 	GLfloat x, y, z;

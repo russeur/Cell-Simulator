@@ -34,6 +34,12 @@ bool Genetics::mutate_conc_target(ConcentrationTarget* target){
 	}
 	return false;
 }
+bool Genetics::is_conc_same(ConcentrationTarget t1, ConcentrationTarget t2){
+	if (t1.comp_type != t2.comp_type || t1.molecule_type != t2.molecule_type || t1.concentration != t2.concentration) return false;
+	
+	return true;
+}
+
 
 
 //
@@ -216,7 +222,7 @@ Genetics::RunningDNA::ActionTypeTarget Genetics::RunningDNA::get_rand_action_tar
 }
 bool Genetics::RunningDNA::mutate_action_target(ActionTypeTarget* target){
 	
-	const float mutate_chance = .5;
+	const float mutate_chance = .05;
 	
 	const float mutate_conc_molecule = .25;
 	const float mutate_conc_range = .25;
@@ -256,6 +262,12 @@ void Genetics::RunningDNA::mutate(){
 		
 	}
 	
+	const float mutate_add_action_chance = .05;
+	if (static_cast<float>(rand()%100)/100 < mutate_add_action_chance){
+		
+		if (static_cast<float>(rand()%100)/100.0 < .5) all_action_targets.push_back(get_rand_action_target());
+		else if (static_cast<int>(all_action_targets.size()) != 0) all_action_targets.erase(all_action_targets.begin()+(rand()%static_cast<int>(all_action_targets.size())));
+	}
 }
 
 void Genetics::RunningDNA::simulate_step(MoleculeConcentrations inside_conc, MoleculeConcentrations outside_conc){
@@ -270,22 +282,7 @@ void Genetics::RunningDNA::simulate_step(MoleculeConcentrations inside_conc, Mol
 	for (int target_i = 0; target_i < static_cast<int>(all_action_targets.size()); target_i++){
 		
 		//find the value in the real world so that we can compare to the target value range
-		float actual_value;
-		switch (all_action_targets[target_i].concentration_target.comp_type){ // get value based on what type of comparison type it is (e.i. value from inside, outside or difference)
-			case ConcComparisonType::INSIDE:
-				actual_value = inside_conc[static_cast<int>(all_action_targets[target_i].concentration_target.molecule_type)];
-				break;
-			case ConcComparisonType::OUTSIDE:
-				actual_value = outside_conc[static_cast<int>(all_action_targets[target_i].concentration_target.molecule_type)];
-				break;
-			case ConcComparisonType::DIFF:
-				actual_value = diff_conc[static_cast<int>(all_action_targets[target_i].concentration_target.molecule_type)];
-				break;
-			default:
-				
-				std::cout<<"Action comparison type is not either INSIDE, OUTSIDE, or DIFF; it is "<<static_cast<int>(all_action_targets[target_i].concentration_target.comp_type)<<"\n";
-				continue;
-		}
+		float actual_value = get_action_target_actual(target_i, diff_conc, inside_conc, outside_conc);
 		
 		if (actual_value < all_action_targets[target_i].concentration_target.concentration + all_action_targets[target_i].target_range &&
 			actual_value > all_action_targets[target_i].concentration_target.concentration - all_action_targets[target_i].target_range){ // check both the lower and upper bounds of taking this action
@@ -296,10 +293,38 @@ void Genetics::RunningDNA::simulate_step(MoleculeConcentrations inside_conc, Mol
 	
 }
 
+float Genetics::RunningDNA::get_action_target_actual(int action_idx, MoleculeConcentrations diff_conc, MoleculeConcentrations inside_conc, MoleculeConcentrations outside_conc){
+	
+	
+	if (action_idx >= all_action_targets.size()) return 0;
+	//find the value in the real world so that we can compare to the target value range
+	float actual_value;
+	switch (all_action_targets[action_idx].concentration_target.comp_type){ // get value based on what type of comparison type it is (e.i. value from inside, outside or difference)
+		case ConcComparisonType::INSIDE:
+			actual_value = inside_conc[static_cast<int>(all_action_targets[action_idx].concentration_target.molecule_type)];
+			break;
+		case ConcComparisonType::OUTSIDE:
+			actual_value = outside_conc[static_cast<int>(all_action_targets[action_idx].concentration_target.molecule_type)];
+			break;
+		case ConcComparisonType::DIFF:
+			actual_value = diff_conc[static_cast<int>(all_action_targets[action_idx].concentration_target.molecule_type)];
+			break;
+		default:
+			
+			std::cout<<"Action comparison type is not either INSIDE, OUTSIDE, or DIFF; it is "<<static_cast<int>(all_action_targets[action_idx].concentration_target.comp_type)<<"\n";
+			break;
+	}
+	return actual_value;
+
+
+}
+
 ActionType Genetics::RunningDNA::get_recommended_action(int action_index){
+	if (action_index >= current_recommended_actions.size() || current_recommended_actions[action_index] >= all_action_targets.size()) return ActionType::INVALID;
 	return all_action_targets[current_recommended_actions[action_index]].action_type;
 }
 ActionLocation Genetics::RunningDNA::get_recommended_action_location(int action_index){
+	if (action_index >= current_recommended_actions.size() || current_recommended_actions[action_index] >= all_action_targets.size()) return ActionLocation::INSIDE;
 	return all_action_targets[current_recommended_actions[action_index]].action_location;
 }
 int Genetics::RunningDNA::get_number_of_recommended_actions(){
@@ -325,6 +350,45 @@ Genetics::RunningDNA::RunningDNA(const RunningDNA& parent_dna){
 	}
 	
 }
+
+Genetics::RunningDNA::RunningDNA(){
+	
+	all_action_targets.resize(4);
+	
+	ActionTypeTarget new_target = 	{
+									ConcentrationTarget{ConcComparisonType::INSIDE, MoleculeType::ATP, 10.0}, 
+									8.0, 
+									ActionType::SPLIT,
+									ActionLocation::INSIDE
+									};
+	
+	all_action_targets[0] = new_target;
+
+	ActionTypeTarget new_target2 = 	{
+									ConcentrationTarget{ConcComparisonType::INSIDE, MoleculeType::SUGAR, 8.0}, 
+									2.0, 
+									ActionType::SUGAR_TO_ATP,
+									ActionLocation::INSIDE
+									};
+	
+	
+	all_action_targets[1] = new_target2;
+
+	ActionTypeTarget new_target3 = 	{
+									ConcentrationTarget{ConcComparisonType::INSIDE, MoleculeType::SUGAR, 6.0}, 
+									2.0, 
+									ActionType::OUTCO2_TO_CO2,
+									ActionLocation::INSIDE
+									};
+	
+	
+	all_action_targets[2] = new_target3;
+
+	
+	
+	
+}
+
 Genetics::RunningDNA::RunningDNA(bool random_dna){
 	
 	int number_of_targets = static_cast<int>(rand()%5);
@@ -341,5 +405,51 @@ Genetics::RunningDNA::RunningDNA(bool random_dna){
 	
 }
 
+
+float Genetics::genetic_difference(RunningDNA* running1, StartingDNA* start1, RunningDNA* running2, StartingDNA* start2){
+	const RunningDNA::ActionTypeTarget* running_dna_values1 = running1->get_targets();
+	int running_dna_size1 = running1->get_number_of_targets();
+	const RunningDNA::ActionTypeTarget* running_dna_values2 = running2->get_targets();
+	int running_dna_size2 = running2->get_number_of_targets();
+	const StartingDNA::CellTypeTargets* start_dna_values1 = start1->get_targets();
+	const StartingDNA::CellTypeTargets* start_dna_values2 = start2->get_targets();
+	
+	
+	float running_diff = 0;
+	for (int i = 0; i < std::min(running_dna_size1, running_dna_size2); i++){
+		running_diff += (Genetics::is_conc_same(running_dna_values1->concentration_target, running_dna_values2->concentration_target)) ? 0 : .25;
+		running_diff += std::abs(running_dna_values1->target_range - running_dna_values2->target_range) / (4.0f * 4.0f);
+		running_diff += (running_dna_values1->action_type == running_dna_values2->action_type) ? 0 : .25;
+		running_diff += (running_dna_values1->action_location == running_dna_values2->action_location) ? 0 : .25;
+		running_dna_values1++;running_dna_values2++;
+	}
+	
+	running_diff += std::abs(running_dna_size1 - running_dna_size2);
+	if (running_diff != 0) running_diff/=std::max(running_dna_size1, running_dna_size2);
+	
+	
+	
+	float starting_diff = 0;
+	for (int i = 0; i < num_of_cell_types; i++){
+		starting_diff += (start_dna_values1->cell_type == start_dna_values2->cell_type) ? 0 : 1.0;
+		for (int j = 0; j < number_of_molecule_types; j++){
+			starting_diff += (Genetics::is_conc_same(start_dna_values1->all_concentration_targets[j], start_dna_values2->all_concentration_targets[j])) ? 0 : 1.0/static_cast<float>(number_of_molecule_types);
+		}
+		start_dna_values1++;start_dna_values2++;
+	}
+	starting_diff /= num_of_cell_types;
+	
+	
+	
+	return running_diff*.7 + starting_diff*.7;
+}
+
+
+float Genetics::get_genetic_length(RunningDNA* running, StartingDNA* start){
+	int sum = running->get_number_of_targets()*3 + num_of_cell_types*number_of_molecule_types/3;
+	return static_cast<float>(sum);
+	
+	
+}
 
 

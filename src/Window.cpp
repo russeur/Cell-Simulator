@@ -15,6 +15,7 @@ Window::Window(int width, int height, const char* title, const char* window_type
 		
 		glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 		window_pntr = glfwCreateWindow(glfwGetVideoMode(glfwGetPrimaryMonitor())->width, glfwGetVideoMode(glfwGetPrimaryMonitor())->height, title, NULL, NULL); 
+		std::cout<<glfwGetVideoMode(glfwGetPrimaryMonitor())->height<<"real\n";
 		glfwMaximizeWindow(window_pntr);
 	}else if ("UNSIZABLE"){
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
@@ -43,10 +44,11 @@ Window::Window(int width, int height, const char* title, const char* window_type
 		glfwTerminate();
 		return;
 	}
-	//turn on VSync
-	glfwSwapInterval(1);
+	//turn off VSync
+	glfwSwapInterval(0);
 	//ensure window is correct size
 	glfwGetFramebufferSize(window_pntr, &this->width, &this->height);
+	glfwGetWindowSize(window_pntr, &this->fwidth, &this->fheight);
 	
 	glViewport(0.0, 0.0, this->width, this->height);
 	
@@ -55,6 +57,7 @@ Window::Window(int width, int height, const char* title, const char* window_type
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//bind cursor position callback
 	glfwSetCursorPosCallback(window_pntr, cursorPositionCallback);//bind
+	glfwSetScrollCallback(window_pntr, scrollCallback);
 	glfwSetInputMode(window_pntr, GLFW_STICKY_MOUSE_BUTTONS, 1);//ensure all mouse events are proccessed
 	//set cursor to normal
 	glfwSetInputMode(window_pntr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);//cursor is visable like normal
@@ -73,7 +76,7 @@ void Window::update_frame(){
 	//find fps
 	frame_count++;
 	double current_time = glfwGetTime();
-	if (current_time - last_time >= 1.0d){
+	if (current_time - last_time >= 1.0){
 		last_fps = frame_count;
 		std::cout<<"fps: "<<last_fps<<"\n";
 		frame_count = 0;
@@ -130,9 +133,15 @@ int Window::get_fps(){
 Position2D Window::screen_to_UV_pos(Position2D screen_pos){
 	return Position2D{(screen_pos.x - width/2.0f) / (width/2.0f), -(screen_pos.y - height/2.0f) / (height/2.0f)};
 }
+Position2D Window::screen_to_UV_pos(Position2D screen_pos, Position2D screen_dims){
+	return Position2D{(screen_pos.x - screen_dims.x/2.0f) / (screen_dims.x/2.0f), -(screen_pos.y - screen_dims.y/2.0f) / (screen_dims.y/2.0f)};
+}
 
 Position2D Window::screen_to_UV_vector(Position2D vector){
 	return Position2D{2*vector.x / width, -2*vector.y / height};
+}
+Position2D Window::screen_to_UV_vector(Position2D vector, Position2D screen_dims){
+	return Position2D{2*vector.x / screen_dims.x, -2*vector.y / screen_dims.y};
 }
 
 
@@ -143,6 +152,9 @@ void Window::terminate(){
 
 
 void cursorPositionCallback(GLFWwindow* window, double xPos, double yPos){
-	Window::get_static_window()->cursor_x = xPos;
-	Window::get_static_window()->cursor_y = yPos;
+	Window::get_static_window()->cursor_x = xPos * (static_cast<float>(Window::get_static_window()->width)/static_cast<float>(Window::get_static_window()->fwidth));
+	Window::get_static_window()->cursor_y = yPos * (static_cast<float>(Window::get_static_window()->height)/static_cast<float>(Window::get_static_window()->fheight));
+}
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset){
+	Window::get_static_window()->scroll = yoffset;
 }

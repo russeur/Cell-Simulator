@@ -2,15 +2,26 @@
 #pragma once
 #include <array>
 
-constexpr int number_of_molecule_types = 5;
+constexpr int number_of_molecule_types = 8;
 
 enum class MoleculeType{
-	FOOD,
-	GOOD_ACID,
-	ACID,
-	OXYGEN,
-	LIGHT_INDICATOR
-	
+	SUGAR, //0
+	ATP, //1
+	GOOD_ACID, //2
+ 	ACID,  //3
+	OXYGEN, //4
+	CO2,  //5
+	LIGHT_INDICATOR,
+	PLANTAESE
+};
+constexpr char* mol_name[number_of_molecule_types] = {"SUGAR",
+					 "ATP",
+	                 "GOOD_ACID",
+	                 "ACID",
+	                 "OXYGEN",
+					 "CO2",
+	                 "LIGHT_INDICATOR",
+					 "PLANTEASE"   
 	
 };
 

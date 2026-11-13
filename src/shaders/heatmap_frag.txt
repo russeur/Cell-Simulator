@@ -3,6 +3,8 @@
 
 flat in float frag_heat;
 
+flat in int is_wall;
+
 out vec4 screenColor;
 
 
@@ -10,7 +12,7 @@ out vec4 screenColor;
 void main(){
 	
 	
-	screenColor = vec4(frag_heat, 0.0f, 0.0f, 1.0f);
+	screenColor = vec4(frag_heat*float(1-is_wall), float(is_wall), 0.0f, 1.0f);
 	
 }
 

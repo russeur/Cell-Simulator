@@ -4,13 +4,19 @@
 layout (location=0) in vec2 vertexPos;
 
 layout (location=1) in float heat;
+layout (location = 2) in int aIsWall;
 
+
+uniform float zoom;
+uniform vec2 zoom_offset;
 
 flat out float frag_heat;
+flat out int is_wall;
 
 
 void main(){
-	gl_Position = vec4(vertexPos, 0.0, 1.0);
+	gl_Position = vec4(vertexPos*zoom + zoom_offset, 0.0, 1.0);
 
 	frag_heat = heat;
+	is_wall = int(aIsWall);
 }

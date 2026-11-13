@@ -1,0 +1,70 @@
+#version 430
+layout(local_size_x = 1) in;
+
+const uint world_dim = 200;
+const uint conc_size = (world_dim*world_dim);
+const uint num_conc = 8;
+
+const uint start_wall_idx = conc_size*num_conc;
+
+layout(std430, binding = 0) readonly buffer Pos {
+	float Conc[conc_size*(num_conc+1)];
+	
+};
+layout(std430, binding = 1) buffer outPos {
+	float outConc[conc_size*(num_conc+1)];
+};
+
+
+
+
+
+
+void main()
+{
+	uint idx = gl_GlobalInvocationID.x;
+	
+	uint conc_idx = idx / conc_size;
+	outConc[idx] = Conc[idx] * float(conc_idx!=1);
+	
+	
+	if (Conc[start_wall_idx + idx%(world_dim*world_dim)]!=0 || conc_idx == 1) return;
+	
+	
+	
+
+	uint adj_tile_idx[4] = {idx+1, idx-1, idx+world_dim, idx-world_dim};
+	
+	for (int adj = 0; adj < 4; adj++){
+		
+		/*
+		if (adj_tile_idx[adj]>=conc_size*conc_idx && 
+		adj_tile_idx[adj]<(conc_size*(conc_idx+1)) &&
+		!(idx%world_dim == 0 && adj_tile_idx[adj]%world_dim == world_dim-1) && 
+		!(idx%world_dim == world_dim-1 && adj_tile_idx[adj]%world_dim == 0)
+		
+		){
+			
+			
+			
+			
+			
+			outConc[idx] -= (Conc[idx] - Conc[adj_tile_idx[adj]]) * .1;
+			
+		}*/
+		
+	
+
+		outConc[idx] -= (Conc[idx] - Conc[adj_tile_idx[adj]]) * .1 * 
+			float(
+			adj_tile_idx[adj]>=conc_size*conc_idx && 
+			adj_tile_idx[adj]<(conc_size*(conc_idx+1)) &&
+			!(idx%world_dim == 0 && adj_tile_idx[adj]%world_dim == world_dim-1) && 
+			!(idx%world_dim == world_dim-1 && adj_tile_idx[adj]%world_dim == 0) &&
+			(Conc[start_wall_idx + adj_tile_idx[adj]%(world_dim*world_dim)] == 0)
+			
+
+			)
+		;
+	}
+}

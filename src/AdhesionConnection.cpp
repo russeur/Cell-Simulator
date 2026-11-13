@@ -66,6 +66,12 @@ void SpringConnection::simulation_step(){
 	Position2D dif = get_conn_global_location(c2) - get_conn_global_location(c1);
 	
 	float length = std::sqrt(dif.x * dif.x + dif.y * dif.y);
+	
+	if (length > 10.0){
+		disconnect_connection();
+		return;
+	}
+	
 	if (length == 0){
 		next_c1_force = Position2D{0, 0};
 		next_c2_force = Position2D{0, 0};

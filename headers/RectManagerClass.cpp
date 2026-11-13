@@ -64,7 +64,7 @@ void Rect_Manager<VertType>::destroy_rect(RectangleID ID){
 	
 	
 	
-	rect_start_indices.erase(ID_iter);
+	ID_iter = rect_start_indices.erase(ID_iter);
 	
 	auto it = rect_start_indices.begin();
 	
@@ -72,10 +72,11 @@ void Rect_Manager<VertType>::destroy_rect(RectangleID ID){
 	rect_vert_data.erase(rect_vert_data.begin() + index, rect_vert_data.begin() + index + 4);
 	indices.erase(indices.begin() + index, indices.begin() + index + 6);
 	
-	
-	it = ID_iter;
-	for (; it != rect_start_indices.end(); it++){
-		(*it)-=4;
+	if (rect_start_indices.end() != ID_iter){
+		it = ID_iter;
+		for (; it != rect_start_indices.end(); it++){
+			(*it)-=4;
+		}
 	}
 	
 	

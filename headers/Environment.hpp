@@ -8,14 +8,16 @@
 
 class Environment{
 	public:
-	static constexpr int square_size = 20;
-	static constexpr int world_dim = 25; //if world_dim = 3, then we will only have 9 squares and the world would be limited by 3*square_size
+	static constexpr int square_size = 40;
+	static constexpr int world_dim = 200; //if world_dim = 3, then we will only have 9 squares and the world would be limited by 3*square_size
 	
 	
-	std::vector<float> concentrations[number_of_molecule_types]; // size of vector will always be world_dim^2
+	float concentrations[(number_of_molecule_types+1)*world_dim*world_dim]; // size of vector will always be world_dim^2
+	
 	
 	
 	int get_tile_from_pos(Position2D);
+	Position2D get_pos_from_tile(int tile_pos);
 	
 	
 	

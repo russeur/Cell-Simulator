@@ -37,9 +37,10 @@ class Window{
 	
 	
 	public:
-	int width, height;
+	int width, height, fwidth, fheight;
 	
 	double cursor_x, cursor_y;
+	double scroll;
 	GLFWwindow* get_window();
 	void update_frame();//swap frame buffer, poll events
 	void clear_window();
@@ -52,8 +53,10 @@ class Window{
 	int get_fps();
 	
 	Position2D screen_to_UV_pos(Position2D screen_pos); // returns num linearaly normilized(between -1 and 1) by range, will not clip values outside of -1 and 1
+	Position2D screen_to_UV_pos(Position2D screen_pos, Position2D screen_dims);
 	
 	Position2D screen_to_UV_vector(Position2D vector);
+	Position2D screen_to_UV_vector(Position2D vector, Position2D screen_dims);
 	
 	
 	
@@ -67,5 +70,5 @@ class Window{
 	
 };
 void cursorPositionCallback(GLFWwindow* window, double xPos, double yPos);
-
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 #endif
