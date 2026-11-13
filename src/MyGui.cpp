@@ -8,10 +8,11 @@ void MyGui::start_frame(){
 }
 
 void MyGui::create_specie_menu(CellRenderManager* cell_manager){
-    if (ImGui::BeginTable("Specie Populations", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiCond_FirstUseEver)) {
-		ImGui::TableSetupColumn("specie name");
-		ImGui::TableSetupColumn("population");
-		ImGui::TableSetupColumn("p");
+	ImGui::Begin("Specie Info");
+    if (ImGui::BeginTable("Specie Populations", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiCond_FirstUseEver)) {
+		
+		ImGui::TableSetupColumn("Specie Idx");
+		ImGui::TableSetupColumn("Population");
 		ImGui::TableHeadersRow();
 		
 		
@@ -25,21 +26,21 @@ void MyGui::create_specie_menu(CellRenderManager* cell_manager){
 			ImGui::TableSetColumnIndex(0);
 			ImGui::PushID(i);
 			bool is_selected = (current_row_select == idx[i]);
-			if (ImGui::Selectable("Selectable", is_selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap)) {
+			std::string label = std::to_string(static_cast<int>(idx[i]));
+			if (ImGui::Selectable(label.c_str(), is_selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap)) {
 				current_row_select = idx[i];
 				std::cout<<current_row_select<<"\n";
 			}
 			
+			
 			ImGui::TableSetColumnIndex(1);
-			ImGui::Text("%i", static_cast<int>(idx[i]));
-			ImGui::TableSetColumnIndex(2);
 			ImGui::Text("%i", cell_manager->all_specie_info[idx[i]].population);
 			ImGui::PopID();
 		}
 	
 		ImGui::EndTable();
 	}
-
+	ImGui::End();
 }
 
 
