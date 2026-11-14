@@ -168,7 +168,7 @@ void Cell::run_food_to_food(ActionLocation destination){
 			break;
 		case (ActionLocation::ATTACHED):
 			
-			for (int i = 0; i < stuck_cells.size(); i++){
+			for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 				
 				stuck_cells[i]->get_other_cell(this)->inside_concentrations[static_cast<int>(MoleculeType::SUGAR)] += strength / stuck_cells.size();
 			}
@@ -198,7 +198,7 @@ void Cell::run_oxy_to_oxy(ActionLocation destination){
 			break;
 		case (ActionLocation::ATTACHED):
 			
-			for (int i = 0; i < stuck_cells.size(); i++){
+			for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 				
 				stuck_cells[i]->get_other_cell(this)->inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] += strength / stuck_cells.size();
 			}
@@ -228,7 +228,7 @@ void Cell::run_outoxy_to_oxy(ActionLocation destination){
 			break;
 		case (ActionLocation::ATTACHED):
 			
-			for (int i = 0; i < stuck_cells.size(); i++){
+			for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 				
 				stuck_cells[i]->get_other_cell(this)->inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] += strength / stuck_cells.size();
 			}
@@ -258,7 +258,7 @@ void Cell::run_co2_to_co2(ActionLocation destination){
 			break;
 		case (ActionLocation::ATTACHED):
 			
-			for (int i = 0; i < stuck_cells.size(); i++){
+			for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 				
 				stuck_cells[i]->get_other_cell(this)->inside_concentrations[static_cast<int>(MoleculeType::CO2)] += strength / stuck_cells.size();
 			}
@@ -288,7 +288,7 @@ void Cell::run_outco2_to_co2(ActionLocation destination){
 			break;
 		case (ActionLocation::ATTACHED):
 			
-			for (int i = 0; i < stuck_cells.size(); i++){
+			for (int i = 0; i < static_cast<int>(stuck_cells.size()); i++){
 				
 				stuck_cells[i]->get_other_cell(this)->inside_concentrations[static_cast<int>(MoleculeType::CO2)] += strength / stuck_cells.size();
 			}
@@ -306,7 +306,7 @@ void Cell::run_outco2_to_co2(ActionLocation destination){
 void Cell::run_atp_to_flagella(ActionLocation destination){
 	if (cell_type == CellType::FLAGELLA && inside_concentrations[static_cast<int>(MoleculeType::ATP)] > 0.0){
 		inside_concentrations[static_cast<int>(MoleculeType::ATP)] -= .0001;
-		this->add_force(Position2D{std::cos(angle_rads)*.01, std::sin(angle_rads)*.01});
+		this->add_force(Position2D{static_cast<GLfloat>(std::cos(angle_rads)*.01), static_cast<GLfloat>(std::sin(angle_rads)*.01)});
 	}
 	
 }
@@ -342,7 +342,7 @@ void Cell::run_sugar_to_atp(ActionLocation destination){
 	inside_concentrations[static_cast<int>(MoleculeType::SUGAR)] -= strength;
 	
 	inside_concentrations[static_cast<int>(MoleculeType::OXYGEN)] -= strength*.1;
-	inside_concentrations[static_cast<int>(MoleculeType::CO2)] += strength*.1*.8;
+	inside_concentrations[static_cast<int>(MoleculeType::CO2)] += strength*.1;
 	
 	switch (destination){
 		case (ActionLocation::INSIDE):
@@ -485,11 +485,11 @@ void Cell::simulation_step(int current_cell_idx){
 		
 	}
 	
-	Position2D dif_from_center = pos - Position2D{env->get_max_pos()/2.0, env->get_max_pos()/2.0};
+	Position2D dif_from_center = pos - Position2D{static_cast<GLfloat>(env->get_max_pos()/2.0), static_cast<GLfloat>(env->get_max_pos()/2.0)};
 	float dist = std::sqrt((dif_from_center.x*dif_from_center.x) + (dif_from_center.y*dif_from_center.y));
 	
-	vel.x += .0000005*dif_from_center.y/dist;
-	vel.y += .0000005*-dif_from_center.x/dist;
+	vel.x += .00005*dif_from_center.y/dist;
+	vel.y += .00005*-dif_from_center.x/dist;
 	
 	
 	pos += vel;
@@ -510,7 +510,7 @@ void Cell::simulation_step(int current_cell_idx){
 	
 	
 	if (!start_dna.is_past_childhood()){
-		start_dna.simulate_step(env->sample_pos(pos), env->sample_pos(pos + Position2D{size, size}));
+		start_dna.simulate_step(inside_concentrations, env->sample_pos(pos + Position2D{size, size}));
 		
 		if (start_dna.is_past_childhood()){
 			//std::cout<<"adult: "<<start_dna.get_determined_cell_type();

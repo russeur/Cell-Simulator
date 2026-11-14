@@ -214,7 +214,7 @@ Genetics::StartingDNA::StartingDNA(bool random_dna){
 Genetics::RunningDNA::ActionTypeTarget Genetics::RunningDNA::get_rand_action_target(){
 	ActionTypeTarget new_target = 	{
 									get_rand_conc_target(static_cast<MoleculeType>(rand()%number_of_molecule_types)), 
-									static_cast<float>(rand()%100)/25.0f, 
+									static_cast<float>(2.0), 
 									static_cast<ActionType>(rand()%num_of_actions),
 									static_cast<ActionLocation>(rand()%num_of_action_locations)
 									};
@@ -226,7 +226,7 @@ bool Genetics::RunningDNA::mutate_action_target(ActionTypeTarget* target){
 	
 	const float mutate_conc_molecule = .25;
 	const float mutate_conc_range = .25;
-	const float mutate_conc_range_strength = .1;
+	const float mutate_conc_range_strength = 1.0;
 	const float mutate_action_type = .25;
 	const float mutate_action_location = .25;
 	
@@ -265,9 +265,10 @@ void Genetics::RunningDNA::mutate(){
 	const float mutate_add_action_chance = .05;
 	if (static_cast<float>(rand()%100)/100 < mutate_add_action_chance){
 		
-		if (static_cast<float>(rand()%100)/100.0 < .5) all_action_targets.push_back(get_rand_action_target());
+		if (static_cast<float>(rand()%100)/100.0 < .5) {all_action_targets.push_back(get_rand_action_target()); std::cout<<"range: "<<all_action_targets[all_action_targets.size()-1].target_range<<"\n";}
 		else if (static_cast<int>(all_action_targets.size()) != 0) all_action_targets.erase(all_action_targets.begin()+(rand()%static_cast<int>(all_action_targets.size())));
 	}
+	
 }
 
 void Genetics::RunningDNA::simulate_step(MoleculeConcentrations inside_conc, MoleculeConcentrations outside_conc){
@@ -296,7 +297,7 @@ void Genetics::RunningDNA::simulate_step(MoleculeConcentrations inside_conc, Mol
 float Genetics::RunningDNA::get_action_target_actual(int action_idx, MoleculeConcentrations diff_conc, MoleculeConcentrations inside_conc, MoleculeConcentrations outside_conc){
 	
 	
-	if (action_idx >= all_action_targets.size()) return 0;
+	if (action_idx >= static_cast<int>(all_action_targets.size())) return 0;
 	//find the value in the real world so that we can compare to the target value range
 	float actual_value;
 	switch (all_action_targets[action_idx].concentration_target.comp_type){ // get value based on what type of comparison type it is (e.i. value from inside, outside or difference)
@@ -320,11 +321,11 @@ float Genetics::RunningDNA::get_action_target_actual(int action_idx, MoleculeCon
 }
 
 ActionType Genetics::RunningDNA::get_recommended_action(int action_index){
-	if (action_index >= current_recommended_actions.size() || current_recommended_actions[action_index] >= all_action_targets.size()) return ActionType::INVALID;
+	if (action_index >= static_cast<int>(current_recommended_actions.size()) || current_recommended_actions[action_index] >= static_cast<int>(all_action_targets.size())) return ActionType::INVALID;
 	return all_action_targets[current_recommended_actions[action_index]].action_type;
 }
 ActionLocation Genetics::RunningDNA::get_recommended_action_location(int action_index){
-	if (action_index >= current_recommended_actions.size() || current_recommended_actions[action_index] >= all_action_targets.size()) return ActionLocation::INSIDE;
+	if (action_index >= static_cast<int>(current_recommended_actions.size()) || current_recommended_actions[action_index] >= static_cast<int>(all_action_targets.size())) return ActionLocation::INSIDE;
 	return all_action_targets[current_recommended_actions[action_index]].action_location;
 }
 int Genetics::RunningDNA::get_number_of_recommended_actions(){

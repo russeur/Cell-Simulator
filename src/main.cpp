@@ -131,7 +131,7 @@ int main() {
 	rect_manager.link_attribute(2, GL_INT, 1, offsetof(heat_map_vert, is_wall));
 	rect_manager.finish_init();
 	
-	sim_size = Position2D{window->height, window->height};//Position2D{928, 928};//
+	sim_size = Position2D{static_cast<GLfloat>(window->height), static_cast<GLfloat>(window->height)};//Position2D{928, 928};//
 	std::cout<<sim_size.x<<": simsize\n";
 	float visual_square_size = static_cast<float>(window->height) / static_cast<float>(env.world_dim);
 	
@@ -508,16 +508,16 @@ void render_simulation(Window* window, Environment* env, Render_Rect_Manager<hea
 	bool is_mouse_in_sim = window->cursor_x < sim_size.x && window->cursor_y < sim_size.y;
 	if (is_mouse_in_sim){
 		
-		float size_ratio = static_cast<float>(window->height) / static_cast<float>(env->world_dim*env->square_size);
+		//float size_ratio = static_cast<float>(window->height) / static_cast<float>(env->world_dim*env->square_size);
 		zoom += window->scroll * .1;
 		if (zoom < 1.0) zoom = 1.0;
 		window->scroll = 0;
 	}
 	
 	std::weak_ptr<Cell> hovering_cell;
-	for (int i = 0; i < cell_manager->cell_list.size(); i++){
+	for (int i = 0; i < static_cast<int>(cell_manager->cell_list.size()); i++){
 		Cell* target_cell = cell_manager->cell_list[i].get();
-		Position2D dist = target_cell->pos-Position2D{(((window->cursor_x - zoom_offset.x)*(env->get_max_pos()/sim_size.x) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0), (((window->cursor_y - zoom_offset.y)*(env->get_max_pos()/sim_size.y) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0)};
+		Position2D dist = target_cell->pos-Position2D{static_cast<GLfloat>(((window->cursor_x - zoom_offset.x)*(env->get_max_pos()/sim_size.x) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0), static_cast<GLfloat>(((window->cursor_y - zoom_offset.y)*(env->get_max_pos()/sim_size.y) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0)};
 		if (std::sqrt((dist.x*dist.x) + (dist.y*dist.y)) < target_cell->size){
 			hovering_cell = cell_manager->cell_list[i];
 			break;
@@ -528,7 +528,7 @@ void render_simulation(Window* window, Environment* env, Render_Rect_Manager<hea
 	
 	last_hover_cell = hovering_cell;
 
-	Position2D cursor_sim_pos = Position2D{(((window->cursor_x - zoom_offset.x)*(env->get_max_pos()/sim_size.x) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0), (((window->cursor_y - zoom_offset.y)*(env->get_max_pos()/sim_size.y) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0)};
+	Position2D cursor_sim_pos = Position2D{static_cast<GLfloat>(((window->cursor_x - zoom_offset.x)*(env->get_max_pos()/sim_size.x) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0), static_cast<GLfloat>(((window->cursor_y - zoom_offset.y)*(env->get_max_pos()/sim_size.y) - env->get_max_pos()/2.0)/zoom + env->get_max_pos()/2.0)};
 	if (window->get_mouse_button_state(GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
 		if (window->get_key_button_state(GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS){
 			
@@ -560,11 +560,11 @@ void render_simulation(Window* window, Environment* env, Render_Rect_Manager<hea
 				std::cout<<"pos: "<<window->cursor_x<<", "<<window->cursor_y<<"\n";
 				if (click_was_in_sim){
 					
-					mouse_start_press_pos = Position2D{window->cursor_x, window->cursor_y};
+					mouse_start_press_pos = Position2D{static_cast<GLfloat>(window->cursor_x), static_cast<GLfloat>(window->cursor_y)};
 				}
 			}else if (click_was_in_sim){
-				zoom_offset +=  Position2D{window->cursor_x, window->cursor_y} - mouse_start_press_pos;
-				mouse_start_press_pos = Position2D{window->cursor_x, window->cursor_y};
+				zoom_offset +=  Position2D{static_cast<GLfloat>(window->cursor_x), static_cast<GLfloat>(window->cursor_y)} - mouse_start_press_pos;
+				mouse_start_press_pos = Position2D{static_cast<GLfloat>(window->cursor_x), static_cast<GLfloat>(window->cursor_y)};
 			}
 		}
 
@@ -575,7 +575,7 @@ void render_simulation(Window* window, Environment* env, Render_Rect_Manager<hea
 		left_pressed = true;
 	}else{
 		if (left_pressed){
-			if (mouse_start_press_pos == Position2D{window->cursor_x, window->cursor_y}){
+			if (mouse_start_press_pos == Position2D{static_cast<GLfloat>(window->cursor_x), static_cast<GLfloat>(window->cursor_y)}){
 				if (auto hover_cell = last_hover_cell.lock()){
 					MyGui::focused_cell = hover_cell;
 					

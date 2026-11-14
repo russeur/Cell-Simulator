@@ -282,7 +282,7 @@ std::vector<std::weak_ptr<Cell>> CellRenderManager::find_touching_cells(Cell* cl
 	return std::vector<std::weak_ptr<Cell>>();
 }
 std::vector<std::weak_ptr<Cell>> CellRenderManager::find_touching_cells(int idx){ //make this based off of indx instead of pointer
-	if (idx < collision_list.size()) return collision_list[idx];
+	if (idx < static_cast<int>(collision_list.size())) return collision_list[idx];
 	
 	return std::vector<std::weak_ptr<Cell>>();
 }
@@ -345,10 +345,10 @@ void CellRenderManager::simulation_step(GLuint m_shaderProg, GLuint BufSize, GLu
 
 
 	for (int spatial_i = 0; spatial_i < num_squares_x*num_squares_x; spatial_i++){
-		for (int cell_i = 0; cell_i < spatial_map[spatial_i].size(); cell_i++){
+		for (int cell_i = 0; cell_i < static_cast<int>(spatial_map[spatial_i].size()); cell_i++){
 			Cell* og_cell = cell_list[spatial_map[spatial_i][cell_i]].get();
 			
-			for (int cell_j = cell_i+1; cell_j < spatial_map[spatial_i].size(); cell_j++){
+			for (int cell_j = cell_i+1; cell_j < static_cast<int>(spatial_map[spatial_i].size()); cell_j++){
 					
 				Cell* other_cell = cell_list[spatial_map[spatial_i][cell_j]].get();
 				if (fix_collision(og_cell, other_cell) && (!og_cell->is_stuck_to_cell(other_cell))){
@@ -364,7 +364,7 @@ void CellRenderManager::simulation_step(GLuint m_shaderProg, GLuint BufSize, GLu
 			int adj_spatial_idx[2] = {spatial_i-1, spatial_i-num_squares_x};
 			for (int adj_i = 0; adj_i < 2; adj_i++){
 				if (adj_spatial_idx[adj_i] < 0 || adj_spatial_idx[adj_i] >= num_squares_x*num_squares_x) continue;
-				for (int cell_j = 0; cell_j < spatial_map[adj_spatial_idx[adj_i]].size(); cell_j++){
+				for (int cell_j = 0; cell_j < static_cast<int>(spatial_map[adj_spatial_idx[adj_i]].size()); cell_j++){
 					
 					Cell* other_cell = cell_list[spatial_map[adj_spatial_idx[adj_i]][cell_j]].get();
 					if (fix_collision(og_cell, other_cell) && (!og_cell->is_stuck_to_cell(other_cell))){

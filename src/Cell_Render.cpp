@@ -69,6 +69,9 @@ void Cell_Render::render_step(int selected_species_id){
 			r = .1; g = .7; b = .7;
 			
 			break;
+		default:
+			r=1.0; g=1.0; b=1.0;
+			
 		
 	}
 	if (selected_species_id != -1 && selected_species_id == this->specie_parent_index){
@@ -134,10 +137,16 @@ Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position
 			r = .1; g = .7; b = .1;
 			
 			break;
-		
+		case CellType::FLAGELLA:
+			r = .1; g = .7; b = .7;
+			
+			break;
+		default:
+			r=1.0; g=1.0; b=1.0;
+			break;
 	}
 	
-	sim_size = Position2D{window->height, window->height};
+	sim_size = Position2D{static_cast<GLfloat>(window->height), static_cast<GLfloat>(window->height)};
 	sim_ratio = Position2D{sim_size.x/env->get_max_pos(),sim_size.y/env->get_max_pos()};
 	
 	rect_id = render_rect_man->new_rect(window->screen_to_UV_pos((this->pos- Position2D{size, size})*sim_ratio, sim_size), window->screen_to_UV_vector(Position2D{size*2.0f, size*2.0f}*sim_ratio, sim_size), 0.0f, 0.0f, r, g, b);
@@ -188,10 +197,17 @@ Cell_Render::Cell_Render(Environment* env, CellRenderManager* cell_man, Position
 			r = .1; g = .7; b = .1;
 			
 			break;
-		
+		case CellType::FLAGELLA:
+			r = .1; g = .7; b = .7;
+			
+			break;
+		default:
+			r=1.0; g=1.0; b=1.0;
+			break;
 	}
+			
 	
-	sim_size = Position2D{window->height, window->height};
+	sim_size = Position2D{static_cast<GLfloat>(window->height), static_cast<GLfloat>(window->height)};
 	sim_ratio = Position2D{sim_size.x/env->get_max_pos(), sim_size.y/env->get_max_pos()};
 	
 	rect_id = render_rect_man->new_rect(window->screen_to_UV_pos((this->pos - Position2D{size, size})*sim_ratio, sim_size), window->screen_to_UV_vector(Position2D{size*2.0f, size*2.0f}*sim_ratio, sim_size), 0.0f, 0.0f, r, g, b);

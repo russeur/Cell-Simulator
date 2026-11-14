@@ -12,7 +12,7 @@ int Environment::get_tile_from_pos(Position2D pos){
 }
 Position2D Environment::get_pos_from_tile(int tile_pos){
 
-	return Position2D{static_cast<float>((tile_pos%world_dim)*square_size)+static_cast<float>(square_size)/2.0, static_cast<float>((tile_pos/world_dim)*square_size)+static_cast<float>(square_size)/2.0};
+	return Position2D{static_cast<GLfloat>((tile_pos%world_dim)*square_size)+static_cast<GLfloat>(square_size)/2.0, static_cast<GLfloat>((tile_pos/world_dim)*square_size)+static_cast<GLfloat>(square_size)/2.0};
 
 }
 

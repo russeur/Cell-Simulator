@@ -7,6 +7,7 @@ void MyGui::start_frame(){
 	
 }
 
+
 void MyGui::create_specie_menu(CellRenderManager* cell_manager){
 	ImGui::Begin("Specie Info");
     if (ImGui::BeginTable("Specie Populations", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiCond_FirstUseEver)) {
@@ -21,11 +22,11 @@ void MyGui::create_specie_menu(CellRenderManager* cell_manager){
 		
 		std::sort(idx.begin(), idx.end(), [&cell_manager](size_t i1, size_t i2){return cell_manager->all_specie_info[i1].population > cell_manager->all_specie_info[i2].population;});
 		
-		for (int i = 0; i < idx.size(); i++){
+		for (int i = 0; i < static_cast<int>(idx.size()); i++){
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
 			ImGui::PushID(i);
-			bool is_selected = (current_row_select == idx[i]);
+			bool is_selected = (current_row_select == static_cast<int>(idx[i]));
 			std::string label = std::to_string(static_cast<int>(idx[i]));
 			if (ImGui::Selectable(label.c_str(), is_selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap)) {
 				current_row_select = idx[i];
@@ -55,7 +56,7 @@ void MyGui::create_cell_menu(Environment* env){
 		
 		cell_type_string += std::to_string(static_cast<int>(target_cell->cell_type));
 		
-		ImGui::Text(cell_type_string.c_str());
+		ImGui::Text("%s", cell_type_string.c_str());
 
 
 		
@@ -151,8 +152,8 @@ void MyGui::create_cell_menu(Environment* env){
 				   	// Parameters: (Label, X positions, Y values, Count, Width of bars)
 				   	auto* drawList = ImPlot::GetPlotDrawList();
 
-				   	ImVec2 p1 = ImPlot::PlotToPixels(0, ((target_cell->running_dna.get_targets()+a)->concentration_target.concentration)-((target_cell->running_dna.get_targets()+a)->target_range));
-					ImVec2 p2 = ImPlot::PlotToPixels(1, ((target_cell->running_dna.get_targets()+a)->concentration_target.concentration)+((target_cell->running_dna.get_targets()+a)->target_range));
+				   	ImVec2 p1 = ImPlot::PlotToPixels(0, ((target_cell->running_dna.get_targets()+a)->concentration_target.concentration)+((target_cell->running_dna.get_targets()+a)->target_range));
+					ImVec2 p2 = ImPlot::PlotToPixels(1, ((target_cell->running_dna.get_targets()+a)->concentration_target.concentration)-((target_cell->running_dna.get_targets()+a)->target_range));
 					drawList->AddRectFilled(
     	       		   p1,
     	       		   p2,

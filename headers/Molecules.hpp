@@ -14,7 +14,7 @@ enum class MoleculeType{
 	LIGHT_INDICATOR,
 	PLANTAESE
 };
-constexpr char* mol_name[number_of_molecule_types] = {"SUGAR",
+constexpr const char* mol_name[number_of_molecule_types] = {"SUGAR",
 					 "ATP",
 	                 "GOOD_ACID",
 	                 "ACID",

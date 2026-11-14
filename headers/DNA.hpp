@@ -30,7 +30,7 @@ enum class ActionType{
 
 	INVALID
 };
-constexpr char* action_name[num_of_actions] = {
+constexpr const char* action_name[num_of_actions] = {
 	"OXY_TO_ACID",
 	"SPLIT",
 	"FOOD_TO_FOOD",
@@ -58,7 +58,7 @@ enum class ActionLocation{
 namespace Genetics{
 	constexpr float mutate_chance = .05; // 0.0-1.0, chance per molecule target
 	constexpr float mutate_target_value_chance = .8; // 0.0-1.0, chance for a quantitiy target to be changed if mutating. 1-mutate_target_value_chance = mutate_comparison_type_chance
-	constexpr float mutate_target_value_stength = .1; // the amount a quantity target will change if mutated
+	constexpr float mutate_target_value_stength = 1.0; // the amount a quantity target will change if mutated
 	struct ConcentrationTarget{
 		ConcComparisonType comp_type;
 		MoleculeType molecule_type;
