@@ -4,8 +4,8 @@ Watch as cells interact with their environment and each other, form organisms, a
 
 # General Simulation Information
 Cell types:
-  - Green Cell(plant cell): Gets sugar when getting sun. Currently this is on the bottom and top of the environment\
-  - Red Cells: Passively bring sugar into their cell\
+  - Green Cell(plant cell): Gets sugar when getting sun. Currently this is on the bottom and top of the environment
+  - Red Cells: Passively bring sugar into their cell
   - Blue Cells (flagella cell): Has the ability to move around
 
 
